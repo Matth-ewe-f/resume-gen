@@ -1,118 +1,67 @@
 "use client";
 import SmartTextArea from "@/components/SmartTextArea";
-import { LinkedinIcon, Mail, MousePointer, Phone } from "lucide-react";
+import { LinkedinIcon, Mail, MousePointer, Phone, Square, SquareCheckBig } from "lucide-react";
 import { ChangeEvent, FC, useEffect, useState } from "react";
-
-type experience = {
-  title: string,
-  dates: string,
-  subtitle: string,
-  bullets: string[]
-}
-
-type heading = {
-  text: string
-}
-
-type rightColumnItem = experience | heading;
-
-const isHeading = (item: any) => { return item.text !== undefined }
+import { cv } from "@/data";
 
 const Home : FC = () => {
   const [rightColumn, setRightColumn] = useState<rightColumnItem[]>([]);
+  const [rightColumnChecks, setRightColumnChecks] = useState<boolean[]>([]);
+  const [allRightColumn, setAllRightColumn] = useState<experience[]>([]);
+
+  const isHeading = (item: any) => { return item.text !== undefined }
 
   useEffect(() => {
-    setRightColumn([
-      { text: "Programming & Audio Implementation" },
-      {
-        title: "Technical Sound Designer",
-        dates: "Oct 2023 - Jan 2024",
-        subtitle: "Dynamic Ambience System in Unity (School Project)",
-        bullets: [
-          "Created system to trigger ambient sound effects and modulate volume, spatialization, rate, etc., based on proximity, density, and relative location of tagged game objects",
-          "System eliminates the need for long ambience loops, and adds realism to the game world by dynamically changing the ambience to reflect the environment",
-          "Developed tooling to set how game parameters affect generated ambience without the need to modify any code",
-        ]
-      },
-      {
-        title: "Web Developer",
-        dates: "May - Sep 2022",
-        subtitle: "uCredit",
-        bullets: [
-          "Cooperated with 15 JHU students to build a degree requirement planning app",
-          "Utilized the MERN stack, and related technologies such as Cypress and Next.js",
-          "Received academic credit for work; project overseen by JHU faculty advisor",
-          "Collaborated effectively with an existing team by studying and understanding legacy code, adapting to pre-established programming practices, etc.",
-        ]
-      },
-      {
-        title: "Audio Programmer & General Programmer",
-        dates: "Mar - Aug 2021",
-        subtitle: "Project Dew (Video Game)",
-        bullets: [
-          "Implemented music and sound effects using Wwise",
-          "Integrated Wwise with Unity, handled all event and game sync programming",
-          "Handled dynamic loading of Wwise Soundbanks based on gameplay scenario",
-          "Programmed platforming mechanics and UI elements using Unity C# scripts",
-        ]
-      },
-      {
-        title: "Music Implentation & Composer",
-        dates: "Feb - Aug 2021",
-        subtitle: "Project Nono (Video Game)",
-        bullets: [
-          "Worked on game for physical therapy and stroke rehabilitation, developed by the Kata Design Studio of the Johns Hopkins University Medical Center",
-          "Developed and implemented highly interactive music system using MIDI in Wwise",
-          "Utilized Wwise RTPCs to modulate the music's tempo, instrumentation, timbre, and arrangement, exceeding the capabilities of typical adaptive music systems",
-          "Encouraged patient engagement by making the music respond specifically to controller input from the player, instead of high-level game states",
-        ]
-      },
-      {
-        title: "Composer & Programmer",
-        dates: "Feb - Apr 2021",
-        subtitle: "Sounds of Adventure (Independent VGM collection)",
-        bullets: [
-          "Composed collection of game music with sales on the Unity Asset Store",
-          "Programmed playback engine to handle looping, fading, track transitions, etc. in C#, on top of Unity's built in audio system",
-        ]
-      },
-      { text: "Employment" },
-      {
-        title: "Composer/Sound Designer Assistant",
-        dates: "Summer 2023",
-        subtitle: "To Daniel Kluger, Grammy-nominated and Tony-winning composer and sound designer",
-        bullets: [
-          "Contributed to planning and set up of signal flow, equipment, and acoustic treatment of 5.1-capable studio outfitted with multiple synths and monitors",
-          "Created DAW templates for creative projects and assisted in ideation",
-          "Learned to work independently, acquiring skills and solving problems as they arose",
-        ]
-      },
-      {
-        title: "Contract Composer",
-        dates: "Winter 2020-21, Summer 2019",
-        subtitle: "Creative Outfit Inc., Philadelphia, PA",
-        bullets: [
-          "Composed and mixed music for advertisements and other media for clients such as Thomas Jefferson Health System and the Make-A-Wish Foundation",
-          "Completed professional-level work and successfully managed deadlines in both an inoffice and work-from-home context",
-        ]
-      },
-    ])
+    setAllRightColumn(cv);
+    let checks : boolean[] = [];
+    for (let i = 0;i < cv.length;i++) {
+      checks[i] = false;
+    }
+    setRightColumnChecks(checks);
+    setRightColumn([]);
   }, []);
 
-  const getIndexInRightColumn = (title: string) => {
-    for (let i = 0;i < rightColumn.length;i++) {
-      const element = rightColumn[i];
-      if (isHeading(element)) {
-        if ((element as heading).text == title) {
-          return i;
-        }
-      } else {
-        if ((element as experience).title == title) {
-          return i;
-        }
+  useEffect(() => {
+    let newColumn : rightColumnItem[] = [];
+    rightColumnChecks.forEach((value, index) => {
+      if (value) {
+        newColumn.push(allRightColumn[index]);
       }
-    }
-    return -1;
+    })
+    setRightColumn(newColumn);
+  }, [rightColumnChecks]);
+
+  const checkRightColumnItem = (index : number) => {
+    let newChecks = rightColumnChecks.slice();
+    newChecks[index] = !newChecks[index];
+    setRightColumnChecks(newChecks);
+  }
+
+  const generateRightColumnBuilder = () => {
+    return (
+      <div className="fixed -right-5 top-12 px-6 py-4 bg-stone-300 rounded-2xl">
+        { allRightColumn.map((element, index) => {
+          if (!isHeading(element)) {
+            element = element as experience;
+            return (
+              <div key={`all-right-col-${index}`} className="flex gap-x-2 my-1">
+                <button onClick={() => checkRightColumnItem(index)}>
+                  { rightColumnChecks[index] ? 
+                    <SquareCheckBig size={16}/>
+                  :
+                    <Square size={16}/>
+                  }
+                </button>
+                <h5 className="max-w-48 line-clamp-1 font-semibold
+                text-ellipsis">
+                  {element.subtitle}
+                </h5>
+              </div>
+            );
+          }
+        })}
+      </div>
+    )
   }
 
   const generateContactSection = () => {
@@ -362,43 +311,46 @@ const Home : FC = () => {
   }
 
   return <>
-    <div className="w-[816px] h-[1056px] border-black border">
-      <button className="w-full mt-8 text-4.5xl text-center font-medium uppercase
-      font-grotesk tracking-ultra">
-        Matthew Flynn
-      </button>
-      <h3 className="mb-4 text-center uppercase font-light
-      tracking-widest">
-        Programmer, Composer
-      </h3>
-      <div className="bg-stone-700 h-[1px] w-auto mx-24"/>
-      <div className="flex flex-row w-full">
-        <div className="max-w-[19rem] flex-grow-[8] flex flex-col">
-          <div className="pl-[4.5rem] bg-stone-100 pb-1">
-            { generateContactSection() }
-            <hr className="mt-4 mb-3 mr-8 border-dashed border-t border-stone-600"/>
-            { generateEducationSection() }
-            <hr className="mt-4 mb-3 mr-8 border-dashed border-t border-stone-600"/>
-            { generateSkillsSection() }
-            <hr className="mt-4 mr-8 border-dashed border-t border-stone-600"/>
+    <div className="w-full min-h-screen flex items-center justify-center">
+      <div className="w-[816px] h-[1056px] border-black border">
+        <button className="w-full mt-8 text-4.5xl text-center font-medium uppercase
+        font-grotesk tracking-ultra">
+          Matthew Flynn
+        </button>
+        <h3 className="mb-4 text-center uppercase font-light
+        tracking-widest">
+          Programmer, Composer
+        </h3>
+        <div className="bg-stone-700 h-[1px] w-auto mx-24"/>
+        <div className="flex flex-row w-full">
+          <div className="max-w-[19rem] flex-grow-[8] flex flex-col">
+            <div className="pl-[4.5rem] bg-stone-100 pb-1">
+              { generateContactSection() }
+              <hr className="mt-4 mb-3 mr-8 border-dashed border-t border-stone-600"/>
+              { generateEducationSection() }
+              <hr className="mt-4 mb-3 mr-8 border-dashed border-t border-stone-600"/>
+              { generateSkillsSection() }
+              <hr className="mt-4 mr-8 border-dashed border-t border-stone-600"/>
+            </div>
+            <div className="pl-[3.5rem] bg-stone-100">
+              { generateReferencesSection() }
+            </div>
+            <div className="flex-grow bg-stone-100 min-h-4"/>
           </div>
-          <div className="pl-[3.5rem] bg-stone-100">
-            { generateReferencesSection() }
+          <div className="flex-grow-[13] pl-6 pr-20 pt-2 pb-2">
+            {rightColumn.map((item, index) => {
+              if (isHeading(item)) {
+                return generateHeadingJSX(item as heading, index, "my-1.5");
+              } else {
+                return generateExperienceJSX(item as experience, index, "my-2.5");
+              }
+            })}
           </div>
-          <div className="flex-grow bg-stone-100 min-h-4"/>
         </div>
-        <div className="flex-grow-[13] pl-6 pr-20 pt-2 pb-2">
-          {rightColumn.map((item, index) => {
-            if (isHeading(item)) {
-              return generateHeadingJSX(item as heading, index, "my-1.5");
-            } else {
-              return generateExperienceJSX(item as experience, index, "my-2.5");
-            }
-          })}
-        </div>
+        <div className="bg-stone-700 h-[1px] w-auto mx-24"/>
       </div>
-      <div className="bg-stone-700 h-[1px] w-auto mx-24"/>
     </div>
+    { generateRightColumnBuilder() }
   </>;
 }
 
