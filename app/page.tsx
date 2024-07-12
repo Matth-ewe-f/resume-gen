@@ -1,113 +1,280 @@
-import Image from "next/image";
+import { LinkedinIcon, Mail, MousePointer, Phone } from "lucide-react";
+
+type experience = {
+  title: string,
+  dates: string,
+  subtitle: string,
+  bullets: string[]
+}
+
+type heading = {
+  text: string
+}
+
+type leftColumnItem = experience | heading;
+
+const isHeading = (item: any) => { return item.text !== undefined }
 
 export default function Home() {
-  return (
-    <main className="flex min-h-screen flex-col items-center justify-between p-24">
-      <div className="z-10 w-full max-w-5xl items-center justify-between font-mono text-sm lg:flex">
-        <p className="fixed left-0 top-0 flex w-full justify-center border-b border-gray-300 bg-gradient-to-b from-zinc-200 pb-6 pt-8 backdrop-blur-2xl dark:border-neutral-800 dark:bg-zinc-800/30 dark:from-inherit lg:static lg:w-auto  lg:rounded-xl lg:border lg:bg-gray-200 lg:p-4 lg:dark:bg-zinc-800/30">
-          Get started by editing&nbsp;
-          <code className="font-mono font-bold">app/page.tsx</code>
-        </p>
-        <div className="fixed bottom-0 left-0 flex h-48 w-full items-end justify-center bg-gradient-to-t from-white via-white dark:from-black dark:via-black lg:static lg:size-auto lg:bg-none">
-          <a
-            className="pointer-events-none flex place-items-center gap-2 p-8 lg:pointer-events-auto lg:p-0"
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            By{" "}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className="dark:invert"
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
+  const leftColumnItems : leftColumnItem[] = [
+    { text: "Programming & Audio Implementation" },
+    {
+      title: "Technical Sound Designer",
+      dates: "Oct 2023 - Jan 2024",
+      subtitle: "Dynamic Ambience System in Unity (School Project)",
+      bullets: [
+        "Created system to trigger ambient sound effects and modulate volume, spatialization, rate, etc., based on proximity, density, and relative location of tagged game objects",
+        "System eliminates the need for long ambience loops, and adds realism to the game world by dynamically changing the ambience to reflect the environment",
+        "Developed tooling to set how game parameters affect generated ambience without the need to modify any code",
+      ]
+    },
+    {
+      title: "Web Developer",
+      dates: "May - Sep 2022",
+      subtitle: "uCredit",
+      bullets: [
+        "Cooperated with 15 JHU students to build a degree requirement planning app",
+        "Utilized the MERN stack, and related technologies such as Cypress and Next.js",
+        "Received academic credit for work; project was overseen by JHU faculty advisor",
+        "Collaborated effectively with an existing team by studying and understanding legacy code, adapting to pre-established programming practices, etc.",
+      ]
+    },
+    {
+      title: "Audio Programmer & General Programmer",
+      dates: "Mar - Aug 2021",
+      subtitle: "Project Dew (Video Game)",
+      bullets: [
+        "Implemented music and sound effects using Wwise",
+        "Integrated Wwise with Unity, handled all event and game sync programming",
+        "Handled dynamic loading of Wwise Soundbanks based on gameplay scenario",
+        "Programmed various platforming mechanics and UI elements using Unity C# scripts",
+      ]
+    },
+    {
+      title: "Music Implentation & Composer",
+      dates: "Feb - Aug 2021",
+      subtitle: "Project Nono (Video Game)",
+      bullets: [
+        "Worked on game for physical therapy and stroke rehabilitation, developed by the Kata Design Studio of the Johns Hopkins University Medical Center",
+        "Developed and implemented highly interactive music system using MIDI in Wwise",
+        "Utilized Wwise RTPCs to modulate the music's tempo, instrumentation, timbre, and arrangement, exceeding the capabilities of typical adaptive music systems",
+        "Encouraged patient engagement by making the music respond specifically to controller input from the player, instead of high-level game states",
+      ]
+    },
+    {
+      title: "Composer & Programmer",
+      dates: "Feb - Apr 2021",
+      subtitle: "Sounds of Adventure (Independent VGM collection",
+      bullets: [
+        "Composed collection of game music with multiple sales on the Unity Asset Store",
+        "Programmed playback engine to handle looping, fading, track transitions, etc. in C#, on top of Unity's built in audio system",
+      ]
+    },
+    { text: "Employment" },
+    {
+      title: "Composer/Sound Designer Assistant",
+      dates: "Summer 2023",
+      subtitle: "To Daniel Kluger, Grammy-nominated and Tony-winning composer and sound designer",
+      bullets: [
+        "Contributed to planning and set up of signal flow, equipment, and acoustic treatment of 5.1-capable studio outfitted with multiple synths and monitors",
+        "Created DAW templates for creative projects and assisted in ideation",
+        "Learned to work independently, acquiring skills and solving problems as they arose",
+      ]
+    },
+    {
+      title: "Contract Composer",
+      dates: "Winter 2020-21, Summer 2019",
+      subtitle: "Creative Outfit Inc., Philadelphia, PA",
+      bullets: [
+        "Composed and mixed music for advertisements and other media for clients such as Thomas Jefferson Health System and the Make-A-Wish Foundation",
+        "Completed professional-level work and successfully managed deadlines in both an inoffice and work-from-home context",
+      ]
+    },
+  ]
+
+  const generateContactSection = () => {
+    return <>
+      <h5 className="pt-4 mb-2 text font-grotesk font-medium uppercase
+      tracking-ultra">
+        Contact
+      </h5>
+      <div className="my-2 flex flex-row items-center flex-nowrap gap-x-2">
+        <Mail className="text-stone-600" size={16} strokeWidth={1}/>
+        <a className="text-mini" href="mailto:matthew.flynn.sound@gmail.com">
+          matthew.flynn.sound@gmail.com
+        </a>
+      </div>
+      <div className="my-2 flex flex-row items-center flex-nowrap gap-x-2">
+        <Phone className="text-stone-600" size={16} strokeWidth={1}/>
+        <span className="text-mini">215-760-8565</span>
+      </div>
+      <div className="my-2 flex flex-row items-center flex-nowrap gap-x-2">
+        <MousePointer className="text-stone-600" size={16} strokeWidth={1}/>
+        <a className="text-mini underline"
+        href="http://matthewflynnmusic.com/">
+          http://matthewflynnmusic.com/
+        </a>
+      </div>
+    </>
+  }
+
+  const generateEducationSection = () => {
+    return <>
+      <h5 className="my-2 text font-grotesk font-medium uppercase
+      tracking-ultra">
+        Education
+      </h5>
+      <div className="text-mini leading-tight">
+        <p className="font-bold">B.S. in Computer Science</p>
+        <p>Johns Hopkins University, Baltimore MD., USA</p>
+        <p>May 2024</p>
+        <p>GPA: 3.77 (Combined B.S. and B.M.)</p>
+        <p className="font-bold mt-4">B.M. in Music for New Media</p>
+        <p>Peabody Institute, Baltimore MD., USA</p>
+        <p>May 2024</p>
+        <p>Studied under Thomas Dolby</p>
+      </div>
+    </>
+  }
+
+  const generateSkillsSection = () => {
+    return <>
+      <h5 className="my-2 text font-grotesk font-medium uppercase
+      tracking-ultra">
+        Skills
+      </h5>
+      <div className="text-mini leading-tight">
+        <p className="font-bold">Programming Languages</p>
+        <p>C#, C++, C, JS/TypeScript, Java, Python</p>
+        <p className="mt-2 font-bold">Game Audio Software</p>
+        <p>Wwise, Unity Audio System</p>
+        <p className="mt-2 font-bold">Game Engines</p>
+        <p>Unity, Godot, RPG Maker VX Ace</p>
+        <p className="mt-2 font-bold">Languages</p>
+        <p>Conversational Japanese</p>
+        <p className="mt-2 font-bold">Relevant Coursework</p>
+        <p className="mr-6 text-justify">Software System Design, Object-Oriented Software Engineering, Data Structures, Operating Systems, Sound Design for Games, Linear Algebra, Calculus</p>
+      </div>
+    </>
+  }
+
+  const generateReferencesSection = () => {
+    return <>
+      <h5 className="pl-4 py-2 text font-grotesk font-medium uppercase
+      tracking-ultra">
+        References
+      </h5>
+      <div className="text-mini leading-tight">
+        <div className="mr-4 bg-stone-200 min-h-4 pt-3 px-4 pb-2">
+          <p className="font-bold">Daniel Kluger</p>
+          <p>Most Recent Employer</p>
+          <div className="my-2 flex flex-row items-center flex-nowrap gap-x-2">
+            <Mail className="text-stone-600" size={16} strokeWidth={1}/>
+            <a className="text-mini" href="mailto:daniel.kluger@icloud.com">
+              daniel.kluger@icloud.com
+            </a>
+          </div>
+          <div className="my-2 flex flex-row items-center flex-nowrap gap-x-2">
+            <MousePointer className="text-stone-600" size={16} strokeWidth={1}/>
+            <a className="text-mini underline"
+            href="https://www.danielkluger.com/">
+              https://www.danielkluger.com/
+            </a>
+          </div>
         </div>
       </div>
-
-      <div className="relative z-[-1] flex place-items-center before:absolute before:h-[300px] before:w-full before:-translate-x-1/2 before:rounded-full before:bg-gradient-radial before:from-white before:to-transparent before:blur-2xl before:content-[''] after:absolute after:-z-20 after:h-[180px] after:w-full after:translate-x-1/3 after:bg-gradient-conic after:from-sky-200 after:via-blue-200 after:blur-2xl after:content-[''] before:dark:bg-gradient-to-br before:dark:from-transparent before:dark:to-blue-700 before:dark:opacity-10 after:dark:from-sky-900 after:dark:via-[#0141ff] after:dark:opacity-40 sm:before:w-[480px] sm:after:w-[240px] before:lg:h-[360px]">
-        <Image
-          className="relative dark:drop-shadow-[0_0_0.3rem_#ffffff70] dark:invert"
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
-        />
+      <div className="mt-4 text-mini leading-tight">
+        <div className="mr-4 bg-stone-200 min-h-4 pt-3 px-4 pb-2">
+          <p className="font-bold">Phillip Klassen</p>
+          <p>Game Audio Professor</p>
+          <div className="my-2 flex flex-row items-center flex-nowrap gap-x-2">
+            <Mail className="text-stone-600 shrink-0" size={16}
+            strokeWidth={1}/>
+            <a className="text-mini" href="mailto:phillip.klassen@oxidegames.com">
+              phillip.klassen@oxidegames.com
+            </a>
+          </div>
+          <div className="my-2 flex flex-row items-center flex-nowrap gap-x-2">
+            <LinkedinIcon className="text-stone-600 shrink-0" size={16}
+            strokeWidth={1}/>
+            <a className="text-mini underline break-all"
+            href="https://www.linkedin.com/in/phillip-klassen-ab4108105">
+              https://www.linkedin.com/in/phillip-klassen-ab4108105
+            </a>
+          </div>
+        </div>
       </div>
+    </>
+  }
 
-      <div className="mb-32 grid text-center lg:mb-0 lg:w-full lg:max-w-5xl lg:grid-cols-4 lg:text-left">
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className="mb-3 text-2xl font-semibold">
-            Docs{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className="m-0 max-w-[30ch] text-sm opacity-50">
-            Find in-depth information about Next.js features and API.
-          </p>
-        </a>
-
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className="mb-3 text-2xl font-semibold">
-            Learn{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className="m-0 max-w-[30ch] text-sm opacity-50">
-            Learn about Next.js in an interactive course with&nbsp;quizzes!
-          </p>
-        </a>
-
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className="mb-3 text-2xl font-semibold">
-            Templates{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className="m-0 max-w-[30ch] text-sm opacity-50">
-            Explore starter templates for Next.js.
-          </p>
-        </a>
-
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className="mb-3 text-2xl font-semibold">
-            Deploy{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className="m-0 max-w-[30ch] text-balance text-sm opacity-50">
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
+  const generateExperienceJSX = 
+  (experience : experience, className?: string) => {
+    if (className == undefined) {
+      className = "";
+    }
+    return <>
+      <div className={`${className} leading-tight`}>
+        <div className="flex flex-row justify-between items-end">
+          <h5 className="font-semibold text-sm">{experience.title}</h5>
+          <span className="text-mini">{experience.dates}</span>
+        </div>
+        <p className="text-mini">{experience.subtitle}</p>
+        <ul className="ml-4 text-mini list-disc text-justify">
+          {experience.bullets.map(bullet => {
+            return <li>{bullet}</li>
+          })}
+        </ul>
       </div>
-    </main>
-  );
+    </>;
+  }
+
+  const generateHeadingJSX = (heading: heading, className? : string) => {
+    if (className == undefined) {
+      className = "";
+    }
+    return <>
+      <h5 className={`${className} font-grotesk font-medium uppercase ` +
+      `tracking-widest`}>
+        {heading.text}
+      </h5>
+    </>;
+  }
+
+  return <div className="w-[816px] h-[1056px]">
+    <h1 className="mt-8 text-4.5xl text-center font-medium uppercase
+    font-grotesk tracking-ultra">
+      Matthew Flynn
+    </h1>
+    <h3 className="mb-4 text-center uppercase font-light
+    tracking-widest">
+      Programmer, Composer
+    </h3>
+    <div className="bg-stone-700 h-[1px] w-auto mx-24"/>
+    <div className="flex flex-row w-full">
+      <div className="flex-grow-[8] flex flex-col">
+        <div className="max-w-[19rem] pl-[5.5rem] bg-stone-100 pb-1">
+          { generateContactSection() }
+          <hr className="mt-4 mb-3 mr-8 border-dashed border-t border-stone-600"/>
+          { generateEducationSection() }
+          <hr className="mt-4 mb-3 mr-8 border-dashed border-t border-stone-600"/>
+          { generateSkillsSection() }
+          <hr className="mt-4 mr-8 border-dashed border-t border-stone-600"/>
+        </div>
+        <div className="max-w-[19rem] pl-[4.5rem] bg-stone-100">
+          { generateReferencesSection() }
+        </div>
+        <div className="flex-grow bg-stone-100"/>
+      </div>
+      <div className="flex-grow-[13] pl-6 pr-20 pt-2 pb-2">
+        {leftColumnItems.map(item => {
+          if (isHeading(item)) {
+            return generateHeadingJSX(item as heading, "my-2.5");
+          } else {
+            return generateExperienceJSX(item as experience, "my-2.5");
+          }
+        })}
+      </div>
+    </div>
+    <div className="bg-stone-700 h-[1px] w-auto mx-24"/>
+  </div>;
 }
