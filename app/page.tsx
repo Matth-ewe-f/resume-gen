@@ -1,63 +1,171 @@
 "use client";
 import SmartTextArea from "@/components/SmartTextArea";
-import { LinkedinIcon, Mail, MousePointer, Phone, Square, SquareCheckBig } from "lucide-react";
+import { ChevronDown, ChevronUp, LinkedinIcon, Mail, MousePointer, Phone, Square, SquareCheckBig } from "lucide-react";
 import { ChangeEvent, FC, useEffect, useState } from "react";
 import { cv } from "@/data";
 
 const Home : FC = () => {
   const [rightColumn, setRightColumn] = useState<rightColumnItem[]>([]);
-  const [rightColumnChecks, setRightColumnChecks] = useState<boolean[]>([]);
+  const [rightColumnIndices, setRightColumnIndices] = useState<number[]>([]);
   const [allRightColumn, setAllRightColumn] = useState<experience[]>([]);
+  const [nextInRightColumn, setNextInRightColumn] = useState(0);
 
   const isHeading = (item: any) => { return item.text !== undefined }
 
   useEffect(() => {
     setAllRightColumn(cv);
-    let checks : boolean[] = [];
+    let checks : number[] = [];
     for (let i = 0;i < cv.length;i++) {
-      checks[i] = false;
+      checks[i] = -1;
     }
-    setRightColumnChecks(checks);
+    setRightColumnIndices(checks);
     setRightColumn([]);
   }, []);
 
   useEffect(() => {
     let newColumn : rightColumnItem[] = [];
-    rightColumnChecks.forEach((value, index) => {
-      if (value) {
-        newColumn.push(allRightColumn[index]);
+    rightColumnIndices.forEach((value, index) => {
+      if (value >= 0) {
+        newColumn[value] = allRightColumn[index];
       }
     })
     setRightColumn(newColumn);
-  }, [rightColumnChecks]);
+  }, [rightColumnIndices]);
+
+  const rightColumnAnythingShown = () => {
+    for (let i = 0;i < rightColumnIndices.length;i++) {
+      if (rightColumnIndices[i] >= 0){
+        return true;
+      }
+    }
+    return false;
+  }
 
   const checkRightColumnItem = (index : number) => {
-    let newChecks = rightColumnChecks.slice();
-    newChecks[index] = !newChecks[index];
-    setRightColumnChecks(newChecks);
+    let newIndices = rightColumnIndices.slice();
+    newIndices[index] = nextInRightColumn;
+    setNextInRightColumn(nextInRightColumn + 1);
+    setRightColumnIndices(newIndices);
+  }
+
+  const uncheckRightColumnItem = (displayIndex : number) => {
+    let index = -1;
+    rightColumnIndices.forEach((value, i) => {
+      if (value == displayIndex) {
+        index = i;
+      }
+    })
+    if (index == -1) {
+      return;
+    }
+    let newIndices = rightColumnIndices.slice();
+    if (newIndices[index] == -1) {
+      newIndices[index] = nextInRightColumn;
+      setNextInRightColumn(nextInRightColumn + 1);
+    } else {
+      let removal = newIndices[index];
+      for (let i = 0;i < newIndices.length;i++) {
+        if (newIndices[i] > removal) {
+          newIndices[i]--;
+        }
+      }
+      newIndices[index] = -1;
+      setNextInRightColumn(nextInRightColumn - 1);
+    }
+    setRightColumnIndices(newIndices);
+  }
+
+  const switchRightColumnItems = (a : number, b : number) => {
+    if (a < 0 || b < 0) {
+      return;
+    }
+    let index1 = -1;
+    let index2 = -1;
+    rightColumnIndices.forEach((value, index) => {
+      if (value == a) {
+        index1 = index;
+      } else if (value == b) {
+        index2 = index;
+      }
+    })
+    if (index1 >= 0 && index2 >= 0) {
+      let newIndices = rightColumnIndices.slice();
+      let temp = newIndices[index1];
+      newIndices[index1] = newIndices[index2];
+      newIndices[index2] = temp;
+      setRightColumnIndices(newIndices);
+    }
+  }
+
+  const generateCheckedRightBuilderItem =
+  (item : rightColumnItem, index : number) => {
+    const ChevronUpClick = () => { switchRightColumnItems(index, index - 1) };
+    const ChevronDownClick = () => { switchRightColumnItems(index, index + 1) };
+
+    if (!isHeading(item)) {
+      item = item as experience;
+      return (
+        <div key={`right-col-builder-checked-${index}`}
+        className="flex my-1 items-center justify-between">
+          <div className="flex items-center gap-x-2">
+            <button onClick={() => uncheckRightColumnItem(index)}>
+              <SquareCheckBig size={16}/>
+            </button>
+            <h5 className="max-w-48 line-clamp-1 text-ellipsis">
+              {item.subtitle}
+            </h5>
+          </div>
+          <div className="flex items-center">
+            <button onClick={ ChevronUpClick }>
+              <ChevronUp size={20}/>
+            </button>
+            <button onClick={ ChevronDownClick }>
+              <ChevronDown size={20}/>
+            </button>
+          </div>
+        </div>
+      );
+    }
+  }
+
+  const generateUncheckedRightBuilderItem = 
+  (item : experience, index : number) => {
+    return (
+      <div key={`right-col-builder-unchecked-${index}`}
+      className="flex my-1 items-center justify-between">
+        <div className="flex items-center gap-x-2">
+          <button onClick={() => checkRightColumnItem(index)}>
+            <Square size={16}/>
+          </button>
+          <h5 className="max-w-48 line-clamp-1 text-ellipsis">
+            {item.subtitle}
+          </h5>
+        </div>
+        <div className="min-w-10"/>
+      </div>
+    );
   }
 
   const generateRightColumnBuilder = () => {
     return (
       <div className="fixed -right-5 top-12 px-6 py-4 bg-stone-300 rounded-2xl">
+        <h3 className="font-grotesk font-semibold uppercase tracking-ultra">
+          Shown
+        </h3>
+        { rightColumn.map((element, index) => {
+          return generateCheckedRightBuilderItem(element, index);
+        })}
+        { !rightColumnAnythingShown() ? 
+          <span className="text-sm text-stone-500">(Nothing)</span>
+        :
+          ""
+        }
+        <h3 className="font-grotesk font-semibold uppercase tracking-ultra">
+          Hidden
+        </h3>
         { allRightColumn.map((element, index) => {
-          if (!isHeading(element)) {
-            element = element as experience;
-            return (
-              <div key={`all-right-col-${index}`} className="flex gap-x-2 my-1">
-                <button onClick={() => checkRightColumnItem(index)}>
-                  { rightColumnChecks[index] ? 
-                    <SquareCheckBig size={16}/>
-                  :
-                    <Square size={16}/>
-                  }
-                </button>
-                <h5 className="max-w-48 line-clamp-1 font-semibold
-                text-ellipsis">
-                  {element.subtitle}
-                </h5>
-              </div>
-            );
+          if (rightColumnIndices[index] < 0) {
+            return generateUncheckedRightBuilderItem(element, index);
           }
         })}
       </div>
