@@ -2,11 +2,8 @@ type experience = {
   title: string,
   dates: string,
   subtitle: string,
-  bullets: string[]
+  bullets: string[],
+  heading?: string,
 }
 
-type heading = {
-  text: string
-}
-
-type rightColumnItem = experience | heading;
+type rightColumnItem = experience;
