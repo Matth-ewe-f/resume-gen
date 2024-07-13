@@ -1,6 +1,6 @@
 "use client";
 import SmartTextArea from "@/components/SmartTextArea";
-import { ChevronDown, ChevronUp, LinkedinIcon, LucideCircleSlash, LucideMinus, Mail, MousePointer, Phone, Square, SquareCheckBig, X } from "lucide-react";
+import { ChevronDown, ChevronUp, LinkedinIcon, Mail, MousePointer, Phone, Square, SquareCheckBig, X } from "lucide-react";
 import { ChangeEvent, FC, useEffect, useState } from "react";
 import { cv } from "@/data";
 
