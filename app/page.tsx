@@ -84,6 +84,12 @@ const Home : FC = () => {
       }
     })
     if (index1 >= 0 && index2 >= 0) {
+      // switch headings (possible TODO, fix for last item and adjacent headings)
+      let newColumn = rightColumn.slice();
+      let tempHeading = newColumn[a].heading
+      newColumn[a].heading = newColumn[b].heading;
+      newColumn[b].heading = tempHeading;
+      // switch items themselves
       let newIndices = rightColumnIndices.slice();
       let temp = newIndices[index1];
       newIndices[index1] = newIndices[index2];
