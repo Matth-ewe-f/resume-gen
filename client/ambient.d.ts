@@ -1,9 +1,14 @@
 type experience = {
-  id: number,
+  id: string,
   title: string,
   dates: string,
   subtitle: string,
-  bullets: string[],
+  bullets: bullet[],
+}
+
+type bullet = {
+  id: string,
+  text: string,
 }
 
 type heading = {

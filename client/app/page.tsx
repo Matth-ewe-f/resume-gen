@@ -3,6 +3,7 @@ import SmartTextArea from "@/components/SmartTextArea";
 import { ChevronDown, ChevronUp, LinkedinIcon, Mail, MousePointer, Phone, Plus, Square, SquareCheckBig, X } from "lucide-react";
 import { ChangeEvent, FC, useEffect, useState } from "react";
 import axios from "axios";
+const uuid = require("uuid");
 
 const Home : FC = () => {
   const [rightColumn, setRightColumn] = useState<rightColumnItem[]>([]);
@@ -40,8 +41,7 @@ const Home : FC = () => {
 
   const checkRightColumnItem = (indexInAll : number) => {
     let newColumn = rightColumn.slice();
-    newColumn.push(allRightColumn[indexInAll]);
-    console.log(newColumn);
+    newColumn.push(structuredClone(allRightColumn[indexInAll]));
     setRightColumn(newColumn);
   }
 
@@ -186,11 +186,32 @@ const Home : FC = () => {
   }
 
   const generateFocusedRightItem = (indexInVisible : number) => {
-    if (rightColumn.length < 2 || rightColumn[indexInVisible].isHeading) {
+    if (rightColumn.length <= indexInVisible
+    || rightColumn[indexInVisible].isHeading) {
       return <></>;
     }
 
     const experience = rightColumn[indexInVisible] as experience;
+
+    const getSavedVersion = () => {
+      for (let i = 0;i < allRightColumn.length;i++) {
+        if (allRightColumn[i].id == experience.id) {
+          return allRightColumn[i];
+        }
+      }
+      return { id: "", title: "", dates: "", subtitle: "", bullets: [] };
+    }
+
+    const savedVersion = getSavedVersion();
+
+    const isBulletShowing = (id : string) => {
+      for (let i = 0;i < experience.bullets.length;i++) {
+        if (experience.bullets[i].id == id) {
+          return true;
+        }
+      }
+      return false;
+    }
 
     const onTitleChange = (value : string) => {
       let newColumn = rightColumn.slice(0);
@@ -218,12 +239,12 @@ const Home : FC = () => {
         let newBullets = (newColumn[indexInVisible] as experience).bullets;
         newBullets = [
           ...newBullets.slice(0, bulletIndex + 1),
-          "",
+          { id : uuid.v4(), text: "" },
           ...newBullets.slice(bulletIndex + 1)
         ];
         (newColumn[indexInVisible] as experience).bullets = newBullets;
       } else {
-        (newColumn[indexInVisible] as experience).bullets[bulletIndex] = text;
+        (newColumn[indexInVisible] as experience).bullets[bulletIndex].text = text;
       }
       setRightColumn(newColumn);
     }
@@ -231,7 +252,7 @@ const Home : FC = () => {
     const onBulletKeyDown = (e : any, bulletIndex : number) => {
       if (e.keyCode == 8) {
         let bullets = (rightColumn[indexInVisible] as experience).bullets;
-        if (bullets[bulletIndex] == "") {
+        if (bullets[bulletIndex].text == "") {
           let newColumn = rightColumn.slice(0);
           bullets = [
             ...bullets.slice(0, bulletIndex),
@@ -243,13 +264,42 @@ const Home : FC = () => {
       }
     }
 
+    const showBullet = (bullet : bullet) => {
+      let newColumn = rightColumn.slice();
+      (newColumn[indexInVisible] as experience).bullets.push(bullet);
+      setRightColumn(newColumn);
+    }
+
+    const hideBullet = (id : string) => {
+      let newColumn = rightColumn.slice();
+      let experience = newColumn[indexInVisible] as experience;
+      let index = experience.bullets.findIndex(bullet => bullet.id == id);
+      experience.bullets = [
+        ...experience.bullets.slice(0, index),
+        ...experience.bullets.slice(index + 1)
+      ];
+      setRightColumn(newColumn);
+    }
+
+    const swapBullets = (index1 : number, index2 : number) => {
+      if (index1 < 0 || index2 < 0 || index1 >= experience.bullets.length
+      || index2 >= experience.bullets.length) {
+        return;
+      }
+      let newColumn = rightColumn.slice();
+      let newExperience = newColumn[indexInVisible] as experience;
+      const temp = newExperience.bullets[index1];
+      newExperience.bullets[index1] = newExperience.bullets[index2];
+      newExperience.bullets[index2] = temp;
+      setRightColumn(newColumn);
+    }
+
     const longDate = experience.dates.length > 20;
 
     return (
       <div className="fixed top-0 p-16 w-screen h-screen flex items-center
       justify-center bg-white bg-opacity-70">
-        <div className="w-[575px] px-6 py-4 bg-stone-300 rounded-2xl shadow-lg
-        [&_*]:bg-transparent">
+        <div className="w-[575px] px-6 py-4 bg-stone-300 rounded-2xl shadow-lg">
           <div className="flex flex-row items-center justify-between">
             <h3 className="text-xl font-grotesk uppercase tracking-ultra">
               Edit Item
@@ -258,8 +308,8 @@ const Home : FC = () => {
               <X size={32} className="hover:text-stone-400"/>
             </button>
           </div>
-          <hr className="mb-3 border-t border-stone-600"/>
-          <div className="leading-tight">
+          <hr className="mb-3 border-t border-stone-700"/>
+          <div className="leading-tight [&_*]:bg-transparent">
             <div className="flex flex-row justify-between items-end">
               <input
                 className="flex-grow font-semibold text-lg max-w-96"
@@ -278,23 +328,65 @@ const Home : FC = () => {
               value={experience.subtitle}
               onChange={(e) => onSubtitleChange(e.target.value)}
             />
-            <ul className="-mt-1.5 ml-2 text-sm list-none text-justify">
-              {experience.bullets.map((bullet, i) => {
+            <ul className="-mt-1 ml-2 text-sm list-none text-justify">
+              { experience.bullets.map((bullet, i) => {
                 return (
                   <li className="flex flex-row gap-x-1"
-                  key={`bullet-focused-${i}`}>
-                    <span>&#8226;</span>
+                  key={`bullet-focused-enabled-${i}`}>
+                    <button className="h-fit" 
+                    onClick={ () => hideBullet(bullet.id) }>
+                      <SquareCheckBig size={20} className="pt-0.5"/>
+                    </button>
+                    <button className="h-fit"
+                    onClick={ () => swapBullets(i, i - 1) }>
+                      <ChevronUp size={20}/>
+                    </button>
+                    <button className="h-fit"
+                    onClick={ () => swapBullets(i, i + 1) }>
+                      <ChevronDown size={20}/>
+                    </button>
                     <SmartTextArea
                       className="w-full resize-none"
-                      text={bullet}
+                      text={bullet.text}
                       onChange={(e) => onBulletChange(e, i)}
                       onKeyDown={(e) => onBulletKeyDown(e, i)}
                     />
                   </li>
                 )
               })}
+              { experience.bullets.length < savedVersion.bullets.length ? 
+                <hr className="my-2 ml-16 border-t border-stone-700
+                border-dashed"/>
+              :
+                <></>
+              }
+              { savedVersion.bullets.map((bullet, i) => {
+                if (!isBulletShowing(bullet.id)) {
+                  return (
+                    <li className="flex flex-row gap-x-1"
+                    key={`bullet-focused-disabled-${i}`}>
+                      <button className="h-fit"
+                      onClick={ () => showBullet(bullet) }>
+                        <Square size={20} className="pt-0.5"/>
+                      </button>
+                      <div className="w-11"/>
+                      <SmartTextArea
+                        className="w-full resize-none  text-stone-400"
+                        text={bullet.text}
+                        onChange={(e) => onBulletChange(e, i)}
+                        onKeyDown={(e) => onBulletKeyDown(e, i)}
+                      />
+                    </li>
+                  )
+                }
+              })}
             </ul>
           </div>
+          <hr className="my-4 border-t border-stone-600"/>
+            <button className="px-3 py-1.5 bg-stone-800 hover:bg-stone-600
+            text-stone-200 rounded-md">
+              Save
+            </button>
         </div>
       </div>
     )
@@ -512,7 +604,7 @@ const Home : FC = () => {
             {experience.bullets.map((bullet, j) => {
               return (
                 <li key={`bullet-${indexInVisible}-${j}`}>
-                  {bullet}
+                  {bullet.text}
                 </li>
               )
             })}
