@@ -9,6 +9,7 @@ const Home : FC = () => {
   const [allRightColumn, setAllRightColumn] = useState<experience[]>([]);
   const [loading, setLoading] = useState(true);
   const [errorText, setErrorText] = useState("");
+  const [focusedRightItem, setFocusedRightItem] = useState(-1);
 
   useEffect(() => {
     setRightColumn([]);
@@ -184,6 +185,121 @@ const Home : FC = () => {
     )
   }
 
+  const generateFocusedRightItem = (indexInVisible : number) => {
+    if (rightColumn.length < 2 || rightColumn[indexInVisible].isHeading) {
+      return <></>;
+    }
+
+    const experience = rightColumn[indexInVisible] as experience;
+
+    const onTitleChange = (value : string) => {
+      let newColumn = rightColumn.slice(0);
+      (newColumn[indexInVisible] as experience).title = value;
+      setRightColumn(newColumn);
+    }
+
+    const onSubtitleChange = (value : string) => {
+      let newColumn = rightColumn.slice(0);
+      (newColumn[indexInVisible] as experience).subtitle = value;
+      setRightColumn(newColumn);
+    }
+
+    const onDateChange = (value : string) => {
+      let newColumn = rightColumn.slice(0);
+      (newColumn[indexInVisible] as experience).dates = value;
+      setRightColumn(newColumn);
+    }
+
+    const onBulletChange =
+    (event : ChangeEvent<HTMLTextAreaElement>, bulletIndex : number) => {
+      let newColumn = rightColumn.slice(0);
+      const text = event.target.value;
+      if (text[text.length - 1] == '\n') {
+        let newBullets = (newColumn[indexInVisible] as experience).bullets;
+        newBullets = [
+          ...newBullets.slice(0, bulletIndex + 1),
+          "",
+          ...newBullets.slice(bulletIndex + 1)
+        ];
+        (newColumn[indexInVisible] as experience).bullets = newBullets;
+      } else {
+        (newColumn[indexInVisible] as experience).bullets[bulletIndex] = text;
+      }
+      setRightColumn(newColumn);
+    }
+
+    const onBulletKeyDown = (e : any, bulletIndex : number) => {
+      if (e.keyCode == 8) {
+        let bullets = (rightColumn[indexInVisible] as experience).bullets;
+        if (bullets[bulletIndex] == "") {
+          let newColumn = rightColumn.slice(0);
+          bullets = [
+            ...bullets.slice(0, bulletIndex),
+            ...bullets.slice(bulletIndex + 1)
+          ];
+          (newColumn[indexInVisible] as experience).bullets = bullets;
+          setRightColumn(newColumn);
+        }
+      }
+    }
+
+    const longDate = experience.dates.length > 20;
+
+    return (
+      <div className="fixed top-0 p-16 w-screen h-screen flex items-center
+      justify-center bg-white bg-opacity-70">
+        <div className="w-[575px] px-6 py-4 bg-stone-300 rounded-2xl shadow-lg
+        [&_*]:bg-transparent">
+          <div className="flex flex-row items-center justify-between">
+            <h3 className="text-xl font-grotesk uppercase tracking-ultra">
+              Edit Item
+            </h3>
+            <button onClick={ () => setFocusedRightItem(-1) }>
+              <X size={32} className="hover:text-stone-400"/>
+            </button>
+          </div>
+          <hr className="mb-3 border-t border-stone-600"/>
+          <div className="leading-tight">
+            <div className="flex flex-row justify-between items-end">
+              <input
+                className="flex-grow font-semibold text-lg max-w-96"
+                value={experience.title}
+                onChange={(e) => onTitleChange(e.target.value)}
+              />
+              <input
+                className={`pb-0.5 text-right text-sm ` +
+                `${longDate ? 'w-52' : 'w-40'}`}
+                value={experience.dates}
+                onChange={(e) => onDateChange(e.target.value)}
+              />
+            </div>
+            <input
+              className="relative -top-[5px] w-full text-sm"
+              value={experience.subtitle}
+              onChange={(e) => onSubtitleChange(e.target.value)}
+            />
+            <ul className="-mt-1.5 ml-2 text-sm list-none text-justify">
+              {experience.bullets.map((bullet, i) => {
+                return (
+                  <li className="flex flex-row gap-x-1"
+                  key={`bullet-focused-${i}`}>
+                    <span>&#8226;</span>
+                    <SmartTextArea
+                      className="w-full resize-none"
+                      text={bullet}
+                      onChange={(e) => onBulletChange(e, i)}
+                      onKeyDown={(e) => onBulletKeyDown(e, i)}
+                    />
+                  </li>
+                )
+              })}
+            </ul>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   const generateContactSection = () => {
     return <>
       <h5 className="pt-4 mb-2 text font-grotesk font-medium uppercase
@@ -318,100 +434,91 @@ const Home : FC = () => {
   }
 
   const generateExperienceJSX = 
-  (experience : experience, index : number, className?: string) => {
+  (experience : experience, indexInVisible : number, className?: string) => {
     if (className == undefined) {
       className = "";
     }
 
-    const onTitleChange = (value : string) => {
-      let newColumn = rightColumn.slice(0);
-      (newColumn[index] as experience).title = value;
-      setRightColumn(newColumn);
-    }
+    // const onTitleChange = (value : string) => {
+    //   let newColumn = rightColumn.slice(0);
+    //   (newColumn[index] as experience).title = value;
+    //   setRightColumn(newColumn);
+    // }
 
-    const onSubtitleChange = (value : string) => {
-      let newColumn = rightColumn.slice(0);
-      (newColumn[index] as experience).subtitle = value;
-      setRightColumn(newColumn);
-    }
+    // const onSubtitleChange = (value : string) => {
+    //   let newColumn = rightColumn.slice(0);
+    //   (newColumn[index] as experience).subtitle = value;
+    //   setRightColumn(newColumn);
+    // }
 
-    const onDateChange = (value : string) => {
-      let newColumn = rightColumn.slice(0);
-      (newColumn[index] as experience).dates = value;
-      setRightColumn(newColumn);
-    }
+    // const onDateChange = (value : string) => {
+    //   let newColumn = rightColumn.slice(0);
+    //   (newColumn[index] as experience).dates = value;
+    //   setRightColumn(newColumn);
+    // }
 
-    const onBulletChange =
-    (event : ChangeEvent<HTMLTextAreaElement>, bulletIndex : number) => {
-      let newColumn = rightColumn.slice(0);
-      const text = event.target.value;
-      if (text[text.length - 1] == '\n') {
-        let newBullets = (newColumn[index] as experience).bullets;
-        newBullets = [
-          ...newBullets.slice(0, bulletIndex + 1),
-          "",
-          ...newBullets.slice(bulletIndex + 1)
-        ];
-        (newColumn[index] as experience).bullets = newBullets;
-      } else {
-        (newColumn[index] as experience).bullets[bulletIndex] = text;
-      }
-      setRightColumn(newColumn);
-    }
+    // const onBulletChange =
+    // (event : ChangeEvent<HTMLTextAreaElement>, bulletIndex : number) => {
+    //   let newColumn = rightColumn.slice(0);
+    //   const text = event.target.value;
+    //   if (text[text.length - 1] == '\n') {
+    //     let newBullets = (newColumn[index] as experience).bullets;
+    //     newBullets = [
+    //       ...newBullets.slice(0, bulletIndex + 1),
+    //       "",
+    //       ...newBullets.slice(bulletIndex + 1)
+    //     ];
+    //     (newColumn[index] as experience).bullets = newBullets;
+    //   } else {
+    //     (newColumn[index] as experience).bullets[bulletIndex] = text;
+    //   }
+    //   setRightColumn(newColumn);
+    // }
 
-    const onBulletKeyDown = (e : any, bulletIndex : number) => {
-      if (e.keyCode == 8) {
-        let bullets = (rightColumn[index] as experience).bullets;
-        if (bullets[bulletIndex] == "") {
-          let newColumn = rightColumn.slice(0);
-          bullets = [
-            ...bullets.slice(0, bulletIndex),
-            ...bullets.slice(bulletIndex + 1)
-          ];
-          (newColumn[index] as experience).bullets = bullets;
-          setRightColumn(newColumn);
-        }
-      }
-    }
-
-    const longDate = experience.dates.length > 20;
+    // const onBulletKeyDown = (e : any, bulletIndex : number) => {
+    //   if (e.keyCode == 8) {
+    //     let bullets = (rightColumn[index] as experience).bullets;
+    //     if (bullets[bulletIndex] == "") {
+    //       let newColumn = rightColumn.slice(0);
+    //       bullets = [
+    //         ...bullets.slice(0, bulletIndex),
+    //         ...bullets.slice(bulletIndex + 1)
+    //       ];
+    //       (newColumn[index] as experience).bullets = bullets;
+    //       setRightColumn(newColumn);
+    //     }
+    //   }
+    // }
 
     return (
-      <div className={`${className} leading-tight`} key={`right-col-${index}`}>
-        <div className="flex flex-row justify-between items-end">
-          <input
-            className="flex-grow font-semibold text-sm max-w-96"
-            value={experience.title}
-            onChange={(e) => onTitleChange(e.target.value)}
-          />
-          <input
-            className={`text-right text-mini ${longDate ? 'w-40' : 'w-28'}`}
-            value={experience.dates}
-            onChange={(e) => onDateChange(e.target.value)}
-          />
+      <button 
+        key={`right-col-${indexInVisible}`}
+        className={`block ${className}`}
+        onClick={ () => setFocusedRightItem(indexInVisible) }
+      >
+        <div className="text-left leading-tight">
+          <div className="flex flex-row justify-between items-end">
+            <h3 className="flex-grow font-semibold text-sm max-w-96">
+              { experience.title }
+            </h3>
+            <span className="text-right text-mini">
+              { experience.dates }
+            </span>
+          </div>
+          <span className="relative -top-[5px] w-full text-mini">
+            { experience.subtitle }
+          </span>
+          <ul className="-mt-1.5 ml-4 text-mini list-disc text-justify">
+            {experience.bullets.map((bullet, j) => {
+              return (
+                <li key={`bullet-${indexInVisible}-${j}`}>
+                  {bullet}
+                </li>
+              )
+            })}
+          </ul>
         </div>
-        <input
-          className="relative -top-[5px] w-full text-mini"
-          value={experience.subtitle}
-          onChange={(e) => onSubtitleChange(e.target.value)}
-        />
-        <ul className="-mt-1.5 ml-2 text-mini list-none text-justify">
-          {experience.bullets.map((bullet, j) => {
-            return (
-              <li className="flex flex-row gap-x-1"
-              key={`bullet-${index}-${j}`}>
-                <span>&#8226;</span>
-                <SmartTextArea
-                  className="w-full resize-none"
-                  text={bullet}
-                  onChange={(e) => onBulletChange(e, j)}
-                  onKeyDown={(e) => onBulletKeyDown(e, j)}
-                />
-              </li>
-            )
-          })}
-        </ul>
-      </div>
+      </button>
     );
   }
 
@@ -472,6 +579,11 @@ const Home : FC = () => {
       </div>
     </div>
     { generateRightColumnBuilder() }
+    { focusedRightItem >= 0 ?
+      generateFocusedRightItem(focusedRightItem)
+    :
+      ""
+    }
   </>;
 }
 
