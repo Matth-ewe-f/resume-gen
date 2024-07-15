@@ -214,6 +214,26 @@ const Home : FC = () => {
       return false;
     }
 
+    const isTitleChanged = () => experience.title !== savedVersion.title;
+
+    const areDateChanged = () => experience.dates !== savedVersion.dates;
+
+    const isSubtitleChanged = () => {
+      return experience.subtitle !== savedVersion.subtitle;
+    }
+
+    const isBulletChanged = (bulletIndex : number) => {
+      const bullet = experience.bullets[bulletIndex];
+      for (let i = 0;i < savedVersion.bullets.length;i++) {
+        const cur = savedVersion.bullets[i];
+        if (cur.id === bullet.id) {
+          return cur.text !== bullet.text;
+        }
+      }
+      // default to true, because that means the bullet was added
+      return true;
+    }
+
     const onClose = () => {
       setFocusedRightItem(-1);
       setExtraBullets([]);
@@ -328,27 +348,33 @@ const Home : FC = () => {
           <div className="leading-tight [&_*]:bg-transparent">
             <div className="flex flex-row justify-between items-end">
               <input
-                className="flex-grow font-semibold text-lg max-w-96"
+                className={"flex-grow font-semibold text-lg max-w-96 " +
+                `${isTitleChanged() ? 'text-red-500' : ''}`}
                 value={experience.title}
                 onChange={(e) => onTitleChange(e.target.value)}
               />
               <input
-                className={`pb-0.5 text-right text-sm ` +
-                `${longDate ? 'w-52' : 'w-40'}`}
+                className={"pb-0.5 text-right text-sm " +
+                `${longDate ? 'w-52' : 'w-40'} ` +
+                `${areDateChanged() ? 'text-red-500' : ''}`}
                 value={experience.dates}
                 onChange={(e) => onDateChange(e.target.value)}
               />
             </div>
             <input
-              className="relative -top-[5px] w-full text-sm"
+              className={"relative -top-[5px] w-full text-sm " +
+              `${isSubtitleChanged() ? 'text-red-500' : ''}`}
               value={experience.subtitle}
               onChange={(e) => onSubtitleChange(e.target.value)}
             />
             <ul className="-mt-1 ml-2 text-sm list-none text-justify">
               { experience.bullets.map((bullet, i) => {
                 return (
-                  <li className="flex flex-row gap-x-1"
-                  key={`bullet-focused-enabled-${i}`}>
+                  <li
+                    className={"flex flex-row gap-x-1 " + 
+                    `${isBulletChanged(i) ? 'text-red-500' : ''}`}
+                    key={`bullet-focused-enabled-${i}`}
+                  >
                     <button className="h-fit w-5" 
                     onClick={ () => hideBullet(bullet.id) }>
                       <SquareCheckBig size={20} className="pt-0.5"/>
