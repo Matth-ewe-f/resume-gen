@@ -2,17 +2,23 @@
 import SmartTextArea from "@/components/SmartTextArea";
 import { ChevronDown, ChevronUp, LinkedinIcon, Mail, MousePointer, Phone, Plus, Square, SquareCheckBig, X } from "lucide-react";
 import { ChangeEvent, FC, useEffect, useState } from "react";
-import { cv } from "@/data";
+import axios from "axios";
 
 const Home : FC = () => {
   const [rightColumn, setRightColumn] = useState<rightColumnItem[]>([]);
   const [allRightColumn, setAllRightColumn] = useState<experience[]>([]);
   const [loading, setLoading] = useState(true);
+  const [errorText, setErrorText] = useState("");
 
   useEffect(() => {
-    setAllRightColumn(cv);
     setRightColumn([]);
-    setLoading(false);
+    axios.get('http://localhost:3300/allData').then(response => {
+      setAllRightColumn(response.data.experiences);
+      setLoading(false);
+    }).catch(err => {
+      console.log(err);
+      setErrorText("An Error Occured");
+    });
   }, []);
 
   const rightColumnAnythingShown = () => rightColumn.length > 0;
@@ -409,6 +415,14 @@ const Home : FC = () => {
         </ul>
       </div>
     );
+  }
+
+  if (errorText) {
+    return <div className="w-full mt-16 flex justify-center">
+      <h3 className="font-grotesk text-2xl tracking-ultra">
+        {errorText}
+      </h3>
+    </div>
   }
 
   if (loading) {
