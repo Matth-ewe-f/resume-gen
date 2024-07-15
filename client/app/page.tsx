@@ -11,6 +11,7 @@ const Home : FC = () => {
   const [loading, setLoading] = useState(true);
   const [errorText, setErrorText] = useState("");
   const [focusedRightItem, setFocusedRightItem] = useState(-1);
+  const [extraBullets, setExtraBullets] = useState<bullet[]>([]);
 
   useEffect(() => {
     setRightColumn([]);
@@ -213,6 +214,11 @@ const Home : FC = () => {
       return false;
     }
 
+    const onClose = () => {
+      setFocusedRightItem(-1);
+      setExtraBullets([]);
+    }
+
     const onTitleChange = (value : string) => {
       let newColumn = rightColumn.slice(0);
       (newColumn[indexInVisible] as experience).title = value;
@@ -264,6 +270,16 @@ const Home : FC = () => {
       }
     }
 
+    const addNewBullet = () => {
+      const newBullet = { id: uuid.v4(), text: "New Bullet" };
+      let newColumn = rightColumn.slice();
+      (newColumn[indexInVisible] as experience).bullets.push(newBullet);
+      setRightColumn(newColumn);
+      let newExtras = extraBullets.slice();
+      newExtras.push(newBullet);
+      setExtraBullets(newExtras);
+    }
+
     const showBullet = (bullet : bullet) => {
       let newColumn = rightColumn.slice();
       (newColumn[indexInVisible] as experience).bullets.push(bullet);
@@ -304,7 +320,7 @@ const Home : FC = () => {
             <h3 className="text-xl font-grotesk uppercase tracking-ultra">
               Edit Item
             </h3>
-            <button onClick={ () => setFocusedRightItem(-1) }>
+            <button onClick={ onClose }>
               <X size={32} className="hover:text-stone-400"/>
             </button>
           </div>
@@ -333,15 +349,15 @@ const Home : FC = () => {
                 return (
                   <li className="flex flex-row gap-x-1"
                   key={`bullet-focused-enabled-${i}`}>
-                    <button className="h-fit" 
+                    <button className="h-fit w-5" 
                     onClick={ () => hideBullet(bullet.id) }>
                       <SquareCheckBig size={20} className="pt-0.5"/>
                     </button>
-                    <button className="h-fit"
+                    <button className="h-fit w-5"
                     onClick={ () => swapBullets(i, i - 1) }>
                       <ChevronUp size={20}/>
                     </button>
-                    <button className="h-fit"
+                    <button className="h-fit w-5"
                     onClick={ () => swapBullets(i, i + 1) }>
                       <ChevronDown size={20}/>
                     </button>
@@ -354,39 +370,41 @@ const Home : FC = () => {
                   </li>
                 )
               })}
-              { experience.bullets.length < savedVersion.bullets.length ? 
-                <hr className="my-2 ml-16 border-t border-stone-700
-                border-dashed"/>
-              :
-                <></>
-              }
-              { savedVersion.bullets.map((bullet, i) => {
+            </ul>
+            <hr className="my-2 ml-16 border-t border-stone-700
+            border-dashed"/>
+            <ul className="ml-2 text-sm list-none text-justify">
+              { [...savedVersion.bullets, ...extraBullets].map((bullet, i) => {
                 if (!isBulletShowing(bullet.id)) {
                   return (
                     <li className="flex flex-row gap-x-1"
                     key={`bullet-focused-disabled-${i}`}>
-                      <button className="h-fit"
+                      <button className="h-fit w-5"
                       onClick={ () => showBullet(bullet) }>
                         <Square size={20} className="pt-0.5"/>
                       </button>
-                      <div className="w-11"/>
+                      <div className="w-[3.25rem]"/>
                       <SmartTextArea
                         className="w-full resize-none  text-stone-400"
                         text={bullet.text}
-                        onChange={(e) => onBulletChange(e, i)}
-                        onKeyDown={(e) => onBulletKeyDown(e, i)}
+                        disabled={true}
                       />
                     </li>
                   )
                 }
               })}
             </ul>
+            <button className="ml-2 mt-2 flex gap-x-2 items-center"
+            onClick={ addNewBullet }>
+              <Plus size={20}/>
+              <span className="pt-0.5 text-sm">Add Bullet Point</span>
+            </button>
           </div>
           <hr className="my-4 border-t border-stone-600"/>
-            <button className="px-3 py-1.5 bg-stone-800 hover:bg-stone-600
-            text-stone-200 rounded-md">
-              Save
-            </button>
+          <button className="px-3 py-1.5 bg-stone-800 hover:bg-stone-600
+          text-stone-200 rounded-md">
+            Save
+          </button>
         </div>
       </div>
     )

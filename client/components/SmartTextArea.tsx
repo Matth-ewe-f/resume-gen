@@ -5,11 +5,12 @@ import { ChangeEventHandler, FC, KeyboardEventHandler, useLayoutEffect, useRef }
 type props = {
   text: string,
   className: string,
-  onChange: ChangeEventHandler<HTMLTextAreaElement>,
+  onChange?: ChangeEventHandler<HTMLTextAreaElement>,
   onKeyDown?: KeyboardEventHandler<HTMLTextAreaElement>,
+  disabled?: boolean,
 }
 
-const SmartTextArea : FC<props> = ({text, className, onChange, onKeyDown}) => {
+const SmartTextArea : FC<props> = (props) => {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   useLayoutEffect(() => {
@@ -21,15 +22,16 @@ const SmartTextArea : FC<props> = ({text, className, onChange, onKeyDown}) => {
     cur.style.height = "0px";
     // @ts-ignore
     cur.style.height = `${Math.max(cur.scrollHeight, 8)}px`;
-  }, [text]);
+  }, [props.text]);
 
   return <>
     <textarea
       ref={textareaRef}
-      className={`${className}`}
-      value={text}
-      onChange={onChange}
-      onKeyDown={onKeyDown || undefined}
+      className={`${props.className}`}
+      value={props.text}
+      onChange={props.onChange}
+      onKeyDown={props.onKeyDown || undefined}
+      disabled={props.disabled}
     />
   </>;
 }
