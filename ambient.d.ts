@@ -1,9 +1,13 @@
 type experience = {
+  id: number,
   title: string,
   dates: string,
   subtitle: string,
   bullets: string[],
-  heading?: string,
 }
 
-type rightColumnItem = experience;
+type heading = {
+  text: string,
+}
+
+type rightColumnItem = (experience | heading) & { isHeading?: boolean };

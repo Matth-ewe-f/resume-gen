@@ -1,5 +1,6 @@
 const cv = [
   {
+    id: 0,
     title: "Technical Sound Designer",
     dates: "Oct 2023 - Jan 2024",
     subtitle: "Dynamic Ambience System in Unity (School Project)",
@@ -10,6 +11,7 @@ const cv = [
     ]
   },
   {
+    id: 1,
     title: "Web Developer",
     dates: "May - Sep 2022",
     subtitle: "uCredit",
@@ -21,6 +23,7 @@ const cv = [
     ]
   },
   {
+    id: 2,
     title: "Audio Programmer & General Programmer",
     dates: "Mar - Aug 2021",
     subtitle: "Project Dew (Video Game)",
@@ -32,6 +35,7 @@ const cv = [
     ]
   },
   {
+    id: 3,
     title: "Music Implentation & Composer",
     dates: "Feb - Aug 2021",
     subtitle: "Project Nono (Video Game)",
@@ -43,6 +47,7 @@ const cv = [
     ]
   },
   {
+    id: 4,
     title: "Composer & Programmer",
     dates: "Feb - Apr 2021",
     subtitle: "Sounds of Adventure (Independent VGM collection)",
@@ -52,6 +57,7 @@ const cv = [
     ]
   },
   {
+    id: 5,
     title: "Composer/Sound Designer Assistant",
     dates: "Summer 2023",
     subtitle: "To Daniel Kluger, Grammy-nominated and Tony-winning composer and sound designer",
@@ -62,6 +68,7 @@ const cv = [
     ]
   },
   {
+    id: 6,
     title: "Contract Composer",
     dates: "Winter 2020-21, Summer 2019",
     subtitle: "Creative Outfit Inc., Philadelphia, PA",

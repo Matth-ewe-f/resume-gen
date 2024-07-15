@@ -1,186 +1,128 @@
 "use client";
 import SmartTextArea from "@/components/SmartTextArea";
-import { ChevronDown, ChevronUp, LinkedinIcon, Mail, MousePointer, Phone, Square, SquareCheckBig, X } from "lucide-react";
+import { ChevronDown, ChevronUp, LinkedinIcon, Mail, MousePointer, Phone, Plus, Square, SquareCheckBig, X } from "lucide-react";
 import { ChangeEvent, FC, useEffect, useState } from "react";
 import { cv } from "@/data";
 
 const Home : FC = () => {
   const [rightColumn, setRightColumn] = useState<rightColumnItem[]>([]);
-  const [rightColumnIndices, setRightColumnIndices] = useState<number[]>([]);
   const [allRightColumn, setAllRightColumn] = useState<experience[]>([]);
-  const [nextInRightColumn, setNextInRightColumn] = useState(0);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     setAllRightColumn(cv);
-    let checks : number[] = [];
-    for (let i = 0;i < cv.length;i++) {
-      checks[i] = -1;
-    }
-    setRightColumnIndices(checks);
     setRightColumn([]);
+    setLoading(false);
   }, []);
 
-  useEffect(() => {
-    let newColumn : rightColumnItem[] = [];
-    rightColumnIndices.forEach((value, index) => {
-      if (value >= 0) {
-        newColumn[value] = allRightColumn[index];
-      }
-    });
-    setRightColumn(newColumn);
-    setLoading(false);
-  }, [rightColumnIndices]);
+  const rightColumnAnythingShown = () => rightColumn.length > 0;
 
-  const rightColumnAnythingShown = () => {
-    for (let i = 0;i < rightColumnIndices.length;i++) {
-      if (rightColumnIndices[i] >= 0){
-        return true;
+  const visibleInRightColumn = (item : rightColumnItem) => {
+    for (let i = 0;i < rightColumn.length;i++) {
+      const cur = rightColumn[i];
+      if (item.isHeading && cur.isHeading) {
+        if ((item as heading).text === (cur as heading).text) {
+          return true;
+        }
+      } else if (!item.isHeading && !cur.isHeading) {
+        if ((item as experience).id === (cur as experience).id) {
+          return true;
+        }
       }
     }
     return false;
   }
 
-  const checkRightColumnItem = (index : number) => {
-    let newIndices = rightColumnIndices.slice();
-    newIndices[index] = nextInRightColumn;
-    setNextInRightColumn(nextInRightColumn + 1);
-    setRightColumnIndices(newIndices);
+  const checkRightColumnItem = (indexInAll : number) => {
+    let newColumn = rightColumn.slice();
+    newColumn.push(allRightColumn[indexInAll]);
+    console.log(newColumn);
+    setRightColumn(newColumn);
   }
 
-  const uncheckRightColumnItem = (displayIndex : number) => {
-    let index = -1;
-    rightColumnIndices.forEach((value, i) => {
-      if (value == displayIndex) {
-        index = i;
-      }
-    })
-    if (index == -1) {
+  const uncheckRightColumnItem = (indexInVisible : number) => {
+    setRightColumn([
+      ...rightColumn.slice(0, indexInVisible),
+      ...rightColumn.slice(indexInVisible + 1)
+    ]);
+  }
+
+  const switchRightColumnItems =
+  (indexInVisible1 : number, indexInVisible2 : number) => {
+    if (indexInVisible1 < 0 || indexInVisible2 < 0
+    || indexInVisible1 >= rightColumn.length
+    || indexInVisible2 >= rightColumn.length) {
       return;
     }
-    let newIndices = rightColumnIndices.slice();
-    let removal = newIndices[index];
-    for (let i = 0;i < newIndices.length;i++) {
-      if (newIndices[i] > removal) {
-        newIndices[i]--;
-      }
-    }
-    newIndices[index] = -1;
-    setNextInRightColumn(nextInRightColumn - 1);
-    setRightColumnIndices(newIndices);
+    let newColumn = rightColumn.slice();
+    const temp = newColumn[indexInVisible1];
+    newColumn[indexInVisible1] = newColumn[indexInVisible2];
+    newColumn[indexInVisible2] = temp;
+    setRightColumn(newColumn);
   }
 
-  const switchRightColumnItems = (a : number, b : number) => {
-    if (a < 0 || b < 0) {
-      return;
-    }
-    let index1 = -1;
-    let index2 = -1;
-    rightColumnIndices.forEach((value, index) => {
-      if (value == a) {
-        index1 = index;
-      } else if (value == b) {
-        index2 = index;
-      }
-    })
-    if (index1 >= 0 && index2 >= 0) {
-      // switch headings (possible TODO, fix for last item and adjacent headings)
+  const generateVisibleRightBuilderItem =
+  (item : rightColumnItem, indexInVisible : number) => {
+    const onHeadingChange = (value : string) => {
       let newColumn = rightColumn.slice();
-      let tempHeading = newColumn[a].heading
-      newColumn[a].heading = newColumn[b].heading;
-      newColumn[b].heading = tempHeading;
-      // switch items themselves
-      let newIndices = rightColumnIndices.slice();
-      let temp = newIndices[index1];
-      newIndices[index1] = newIndices[index2];
-      newIndices[index2] = temp;
-      setRightColumnIndices(newIndices);
-    }
-  }
-
-  const generateHeadingInRightBuilder =
-  (item : rightColumnItem, index : number) => {
-
-    const removeHeading = () => {
-      let newColumn = rightColumn.slice();
-      newColumn[index].heading = undefined;
+      (newColumn[indexInVisible] as heading).text = value;
       setRightColumn(newColumn);
     }
 
-    const ChevronUpClick = () => {
-      if (index == 0) {
-        return;
-      }
-      let newColumn = rightColumn.slice();
-      if (newColumn[index - 1].heading) {
-        return;
-      }
-      newColumn[index - 1].heading = newColumn[index].heading;
-      newColumn[index].heading = undefined;
-      setRightColumn(newColumn);
-    }
+    const ChevronUpClick = () => { 
+      switchRightColumnItems(indexInVisible, indexInVisible - 1)
+    };
 
     const ChevronDownClick = () => {
-      if (index == rightColumn.length - 1) {
-        return;
-      }
-      let newColumn = rightColumn.slice();
-      if (newColumn[index + 1].heading) {
-        return;
-      }
-      newColumn[index + 1].heading = newColumn[index].heading;
-      newColumn[index].heading = undefined;
-      setRightColumn(newColumn);
-    }
-
-    return (
-      <div className="pt-1 flex items-center justify-between">
-        <div className="flex items-center gap-x-2">
-          <button onClick={removeHeading}>
-            <X size={16}/>
-          </button>
-          <h6 className="max-w-40 font-grotesk uppercase
-          tracking-widest line-clamp-1 text-ellipsis">
-            {item.heading}
-          </h6>
-        </div>
-        <div className="flex items-center">
-          <button onClick={ ChevronUpClick }>
-            <ChevronUp size={20}/>
-          </button>
-          <button onClick={ ChevronDownClick }>
-            <ChevronDown size={20}/>
-          </button>
-        </div>
-      </div>
-    )
-  }
-
-  const generateCheckedRightBuilderItem =
-  (item : rightColumnItem, index : number) => {
-    const ChevronUpClick = () => { switchRightColumnItems(index, index - 1) };
-    const ChevronDownClick = () => { switchRightColumnItems(index, index + 1) };
+      switchRightColumnItems(indexInVisible, indexInVisible + 1)
+    };
     
-    return (
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-x-2">
-          <button onClick={() => uncheckRightColumnItem(index)}>
-            <SquareCheckBig size={16}/>
-          </button>
-          <h5 className="max-w-48 line-clamp-1 text-ellipsis">
-            {item.subtitle}
-          </h5>
+    if (item.isHeading) {
+      return (
+        <div className="pt-1 flex items-center justify-between">
+          <div className="flex items-center gap-x-2">
+            <button onClick={() => uncheckRightColumnItem(indexInVisible)}>
+              <X size={16}/>
+            </button>
+            <input 
+              className="max-w-40 bg-transparent font-grotesk uppercase
+              tracking-widest line-clamp-1 text-ellipsis"
+              value={ (item as heading).text }
+              onChange={(e) => onHeadingChange(e.target.value)}
+            />
+          </div>
+          <div className="flex items-center">
+            <button onClick={ ChevronUpClick }>
+              <ChevronUp size={20}/>
+            </button>
+            <button onClick={ ChevronDownClick }>
+              <ChevronDown size={20}/>
+            </button>
+          </div>
         </div>
-        <div className="flex items-center">
-          <button onClick={ ChevronUpClick }>
-            <ChevronUp size={20}/>
-          </button>
-          <button onClick={ ChevronDownClick }>
-            <ChevronDown size={20}/>
-          </button>
+      )
+    } else {
+      return (
+        <div className="pt-1 flex items-center justify-between">
+          <div className="flex items-center gap-x-2">
+            <button onClick={() => uncheckRightColumnItem(indexInVisible)}>
+              <SquareCheckBig size={16}/>
+            </button>
+            <h5 className="max-w-48 line-clamp-1 text-ellipsis">
+              { (item as experience).subtitle }
+            </h5>
+          </div>
+          <div className="flex items-center">
+            <button onClick={ ChevronUpClick }>
+              <ChevronUp size={20}/>
+            </button>
+            <button onClick={ ChevronDownClick }>
+              <ChevronDown size={20}/>
+            </button>
+          </div>
         </div>
-      </div>
-    );
+      );
+    }
   }
 
   const generateUncheckedRightBuilderItem = 
@@ -202,44 +144,35 @@ const Home : FC = () => {
   }
 
   const generateRightColumnBuilder = () => {
-    const addHeading = (index : number) => {
-      let newColumn = rightColumn.slice();
-      newColumn[index].heading = "New Heading";
-      setRightColumn(newColumn);
+    const addHeading = () => {
+      setRightColumn([
+        { text: "New Heading", isHeading: true },
+        ...rightColumn
+      ]);
     }
 
     return (
       <div className="fixed -right-5 top-12 px-6 py-4 bg-stone-300 rounded-2xl
       shadow-lg">
-        <h3 className="mb-3 text-lg font-grotesk font-semibold uppercase
+        <h3 className="mb-2 text-lg font-grotesk font-semibold uppercase
         tracking-ultra">
           Shown
         </h3>
+        <button className="flex items-center gap-x-1 text-stone-500"
+        onClick={addHeading}>
+          <Plus size={16}/>Add Heading
+        </button>
         { rightColumn.map((element, index) => {
           return <div key={`right-col-builder-checked-${index}`}>
-            {element.heading ?
-              generateHeadingInRightBuilder(element, index)
-            :
-              <button onClick={() => addHeading(index)}>
-                <span className="ml-6 text-sm text-stone-500">
-                  + Add Heading
-                </span>
-              </button>
-            }
-            { generateCheckedRightBuilderItem(element, index) }
+            { generateVisibleRightBuilderItem(element, index) }
           </div>
         })}
-        { !rightColumnAnythingShown() ? 
-          <span className="text-sm text-stone-500">(Nothing)</span>
-        :
-          ""
-        }
-        <h3 className="my-3 text-lg font-grotesk font-semibold uppercase
+        <h3 className="my-2 text-lg font-grotesk font-semibold uppercase
         tracking-ultra">
           Hidden
         </h3>
         { allRightColumn.map((element, index) => {
-          if (rightColumnIndices[index] < 0) {
+          if (!visibleInRightColumn(element)) {
             return generateUncheckedRightBuilderItem(element, index);
           }
         })}
@@ -361,16 +294,29 @@ const Home : FC = () => {
     </>
   }
 
+  const generateHeadingJSX = 
+  (heading : heading, index : number, className?: string) => {
+
+    const onHeadingChange = (value : string) => {
+      let newColumn = rightColumn.slice();
+      (newColumn[index] as heading).text = value;
+      setRightColumn(newColumn);
+    }
+
+    return (
+      <input
+        className={`w-full font-grotesk font-medium uppercase ` +
+        `tracking-widest ${className}`}
+        value={heading.text}
+        onChange={(e) => onHeadingChange(e.target.value)}
+      />
+    )
+  }
+
   const generateExperienceJSX = 
   (experience : experience, index : number, className?: string) => {
     if (className == undefined) {
       className = "";
-    }
-
-    const onHeadingChange = (value : string) => {
-      let newColumn = rightColumn.slice(0);
-      (newColumn[index] as experience).heading = value;
-      setRightColumn(newColumn);
     }
 
     const onTitleChange = (value : string) => {
@@ -428,14 +374,6 @@ const Home : FC = () => {
 
     return (
       <div className={`${className} leading-tight`} key={`right-col-${index}`}>
-        { experience.heading && 
-          <input
-            className="w-full mb-2.5 font-grotesk font-medium uppercase
-            tracking-widest"
-            value={experience.heading}
-            onChange={(e) => onHeadingChange(e.target.value)}
-          />
-        }
         <div className="flex flex-row justify-between items-end">
           <input
             className="flex-grow font-semibold text-sm max-w-96"
@@ -510,7 +448,11 @@ const Home : FC = () => {
           </div>
           <div className="flex-grow-[13] pl-6 pr-20 pt-2 pb-2">
             {rightColumn.map((item, index) => {
-              return generateExperienceJSX(item as experience, index, "my-2.5");
+              if (item.isHeading) {
+                return generateHeadingJSX(item as heading, index, "mt-1")
+              } else {
+                return generateExperienceJSX(item as experience, index, "my-2.5");
+              }
             })}
           </div>
         </div>
