@@ -21,8 +21,6 @@ const Home : FC = () => {
     });
   }, []);
 
-  const rightColumnAnythingShown = () => rightColumn.length > 0;
-
   const visibleInRightColumn = (item : rightColumnItem) => {
     for (let i = 0;i < rightColumn.length;i++) {
       const cur = rightColumn[i];
