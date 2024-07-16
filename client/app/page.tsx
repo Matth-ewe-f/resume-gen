@@ -19,7 +19,7 @@ const Home : FC = () => {
       setAllRightColumn(response.data.experiences);
       setLoading(false);
     }).catch(err => {
-      console.log(err);
+      console.error(err);
       setErrorText("An Error Occured");
     });
   }, []);
@@ -234,6 +234,18 @@ const Home : FC = () => {
       return true;
     }
 
+    const isAnythingChanged = () => {
+      if (isTitleChanged() || areDateChanged() || isSubtitleChanged()) {
+        return true;
+      }
+      for (let i = 0;i < experience.bullets.length;i++) {
+        if (isBulletChanged(i)) {
+          return true;
+        }
+      }
+      return false;
+    }
+
     const onClose = () => {
       setFocusedRightItem(-1);
       setExtraBullets([]);
@@ -302,7 +314,9 @@ const Home : FC = () => {
 
     const showBullet = (bullet : bullet) => {
       let newColumn = rightColumn.slice();
-      (newColumn[indexInVisible] as experience).bullets.push(bullet);
+      (newColumn[indexInVisible] as experience).bullets.push(
+        structuredClone(bullet)
+      );
       setRightColumn(newColumn);
     }
 
@@ -330,12 +344,43 @@ const Home : FC = () => {
       setRightColumn(newColumn);
     }
 
+    const revertChanges = () => {
+      let newExperience = structuredClone(savedVersion);
+      newExperience.bullets = [];
+      experience.bullets.forEach(oldBullet => {
+        let newBullet = savedVersion.bullets.find(e => e.id == oldBullet.id);
+        if (newBullet) {
+          newExperience.bullets.push(structuredClone(newBullet));
+        }
+      })
+      setExtraBullets([]);
+      setRightColumn([
+        ...rightColumn.slice(0, indexInVisible),
+        newExperience,
+        ...rightColumn.slice(indexInVisible + 1)
+      ]);
+    }
+
+    const saveChanges = () => {
+      const body = experience;
+      const url = `http://localhost:3300/experiences/${experience.id}`;
+      axios.put(url, body).then((data) => {
+        let newAllRight = allRightColumn.slice();
+        const index = newAllRight.findIndex(e => e.id === experience.id);
+        newAllRight[index] = data.data;
+        setAllRightColumn(newAllRight);
+        alert("Changes saved");
+      }).catch((err) => {
+        alert("There was an error, changes not written");
+      })
+    }
+
     const longDate = experience.dates.length > 20;
 
     return (
       <div className="fixed top-0 p-16 w-screen h-screen flex items-center
       justify-center bg-white bg-opacity-70">
-        <div className="w-[575px] px-6 py-4 bg-stone-300 rounded-2xl shadow-lg">
+        <div className="w-[640px] px-6 py-4 bg-stone-300 rounded-2xl shadow-lg">
           <div className="flex flex-row items-center justify-between">
             <h3 className="text-xl font-grotesk uppercase tracking-ultra">
               Edit Item
@@ -371,13 +416,13 @@ const Home : FC = () => {
               { experience.bullets.map((bullet, i) => {
                 return (
                   <li
-                    className={"flex flex-row gap-x-1 " + 
+                    className={"my-0.5 flex flex-row gap-x-1 " + 
                     `${isBulletChanged(i) ? 'text-red-500' : ''}`}
                     key={`bullet-focused-enabled-${i}`}
                   >
                     <button className="h-fit w-5" 
                     onClick={ () => hideBullet(bullet.id) }>
-                      <SquareCheckBig size={20} className="pt-0.5"/>
+                      <SquareCheckBig size={20} className="pt-0.25"/>
                     </button>
                     <button className="h-fit w-5"
                     onClick={ () => swapBullets(i, i - 1) }>
@@ -403,11 +448,11 @@ const Home : FC = () => {
               { [...savedVersion.bullets, ...extraBullets].map((bullet, i) => {
                 if (!isBulletShowing(bullet.id)) {
                   return (
-                    <li className="flex flex-row gap-x-1"
+                    <li className="my-0.5 flex flex-row gap-x-1"
                     key={`bullet-focused-disabled-${i}`}>
                       <button className="h-fit w-5"
                       onClick={ () => showBullet(bullet) }>
-                        <Square size={20} className="pt-0.5"/>
+                        <Square size={20} className="pt-0.25"/>
                       </button>
                       <div className="w-[3.25rem]"/>
                       <SmartTextArea
@@ -426,11 +471,23 @@ const Home : FC = () => {
               <span className="pt-0.5 text-sm">Add Bullet Point</span>
             </button>
           </div>
-          <hr className="my-4 border-t border-stone-600"/>
-          <button className="px-3 py-1.5 bg-stone-800 hover:bg-stone-600
-          text-stone-200 rounded-md">
-            Save
-          </button>
+          <hr className="mt-4 mb-2 border-t border-stone-600"/>
+          <div className="flex flex-wrap gap-x-6 gap-y-4 justify-center">
+            { isAnythingChanged() ? 
+              <>
+                <button className="px-3 py-1.5 rounded-md text-stone-200
+                bg-stone-800 hover:bg-stone-600" onClick={saveChanges}>
+                  Save Changes
+                </button>
+                <button className="px-3 py-1.5 rounded-md text-stone-200
+                bg-stone-800 hover:bg-stone-600" onClick={revertChanges}>
+                  Revert Changes
+                </button>
+              </>
+            :
+              <p>Nothing has been changed</p>
+            }
+          </div>
         </div>
       </div>
     )
