@@ -6,18 +6,24 @@ import axios from "axios";
 const uuid = require("uuid");
 
 const Home : FC = () => {
+  // state for the right column
   const [rightColumn, setRightColumn] = useState<rightColumnItem[]>([]);
   const [allRightColumn, setAllRightColumn] = useState<experience[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [errorText, setErrorText] = useState("");
   const [focusedRightItem, setFocusedRightItem] = useState(-1);
   const [focusedIsNew, setFocusedIsNew] = useState(false);
   const [extraBullets, setExtraBullets] = useState<bullet[]>([]);
+  // state for the left column
+  const [allContacts, setAllContacts] = useState<contact[]>([]);
+  const [contacts, setContacts] = useState<contact[]>([]);
+  // general state
+  const [loading, setLoading] = useState(true);
+  const [errorText, setErrorText] = useState("");
 
   useEffect(() => {
-    setRightColumn([]);
     axios.get('http://localhost:3300/allData').then(response => {
       setAllRightColumn(response.data.experiences);
+      setAllContacts(response.data.contacts);
+      setContacts(response.data.contacts);
       setLoading(false);
     }).catch(err => {
       console.error(err);
@@ -582,28 +588,51 @@ const Home : FC = () => {
   }
 
   const generateContactSection = () => {
+    const getIconForContact = (contact : contact) => {
+      if (contact.name == "phone") {
+        return <Phone className="text-stone-600" size={16} strokeWidth={1}/>;
+      } else if (contact.name == "email") {
+        return <Mail className="text-stone-600" size={16} strokeWidth={1}/>;
+      } else if (contact.name == "website") {
+        return (
+          <MousePointer className="text-stone-600" size={16} strokeWidth={1}/>
+        );
+      } else {
+        return <Square className="text-stone-600" size={16} strokeWidth={1}/>;
+      }
+    }
+
+    const getTextForContact = (contact : contact) => {
+      if (contact.link) {
+        return (
+          <a className="max-w-44 mr-4 text-mini flex flex-wrap"
+          href={contact.link}>
+            {contact.value.split('/').map((fragment, index, arr) => {
+              return <span>
+                {fragment}{index == arr.length - 1 ? '' : '/'}
+              </span>
+            })}
+          </a>
+        );
+      } else {
+        return <span className="text-mini">{contact.value}</span>
+      }
+    }
+
     return <>
       <h5 className="pt-4 mb-2 text font-grotesk font-medium uppercase
       tracking-ultra">
         Contact
       </h5>
-      <div className="my-2 flex flex-row items-center flex-nowrap gap-x-2">
-        <Mail className="text-stone-600" size={16} strokeWidth={1}/>
-        <a className="text-mini" href="mailto:matthew.flynn.sound@gmail.com">
-          matthew.flynn.sound@gmail.com
-        </a>
-      </div>
-      <div className="my-2 flex flex-row items-center flex-nowrap gap-x-2">
-        <Phone className="text-stone-600" size={16} strokeWidth={1}/>
-        <span className="text-mini">215-760-8565</span>
-      </div>
-      <div className="my-2 flex flex-row items-center flex-nowrap gap-x-2">
-        <MousePointer className="text-stone-600" size={16} strokeWidth={1}/>
-        <a className="text-mini underline"
-        href="http://matthewflynnmusic.com/">
-          http://matthewflynnmusic.com/
-        </a>
-      </div>
+      { contacts.map(contact => {
+        return (
+          <div className="my-2 flex flex-row items-center flex-nowrap gap-x-2"
+          key={`contact-${contact.name}`}>
+            { getIconForContact(contact) }
+            { getTextForContact(contact) }
+          </div>
+        )
+      })}
     </>
   }
 

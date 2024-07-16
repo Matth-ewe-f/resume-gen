@@ -16,3 +16,9 @@ type heading = {
 }
 
 type rightColumnItem = (experience | heading) & { isHeading?: boolean };
+
+type contact = {
+  name: string,
+  value: string,
+  link?: string,
+}
