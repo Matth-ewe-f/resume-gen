@@ -386,7 +386,12 @@ const Home : FC = () => {
     }
 
     const saveChanges = () => {
-      const body = experience;
+      let body = experience;
+      savedVersion.bullets.forEach(bullet => {
+        if (body.bullets.findIndex(cur => cur.id == bullet.id) == -1) {
+          body.bullets.push(bullet);
+        }
+      })
       let url;
       if (focusedIsNew) {
         url = `http://localhost:3300/experiences/`;
@@ -407,6 +412,7 @@ const Home : FC = () => {
         if (focusedIsNew) {
           setFocusedIsNew(false);
           setFocusedRightItem(-1);
+          setExtraBullets([]);
         }
       }).catch(() => {
         alert("There was an error, changes not written");
@@ -440,6 +446,7 @@ const Home : FC = () => {
           }
           alert("The item was deleted");
           setFocusedRightItem(-1);
+          setExtraBullets([]);
         }).catch(() => {
           alert("There was an error, nothing was deleted");
         })
