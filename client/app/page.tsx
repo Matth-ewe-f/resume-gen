@@ -31,6 +31,99 @@ const Home : FC = () => {
     });
   }, []);
 
+  const capitalize = (s : string) => {
+    return s.split(' ').map(word => word[0].toUpperCase() + word.slice(1)).join(' ');
+  }
+
+  const generateLeftColumnBuilder = () => {
+    const isContactChecked = (contact : contact) => {
+      return contacts.findIndex(cur => cur.name == contact.name) != -1;
+    }
+
+    const checkContact = (contact : contact) => {
+      let index1 = 0;
+      let index2 = 0;
+      while (allContacts[index1].name !== contact.name) {
+        if (isContactChecked(allContacts[index1++])) {
+          index2++;
+        }
+      }
+      setContacts([
+        ...contacts.slice(0, index2),
+        contact,
+        ...contacts.slice(index2)
+      ]);
+    }
+
+    const uncheckContact = (contact : contact) => {
+      let index = contacts.findIndex(cur => cur.name == contact.name);
+      setContacts([
+        ...contacts.slice(0, index),
+        ...contacts.slice(index + 1)
+      ]);
+    }
+
+    const swapContacts = (index1 : number, index2 : number) => {
+      if (index1 < 0 || index2 < 0 || index1 >= allContacts.length
+      || index2 >= allContacts.length) {
+        return;
+      }
+      let newAllContacts = allContacts.slice();
+      let temp = newAllContacts[index1];
+      newAllContacts[index1] = newAllContacts[index2];
+      newAllContacts[index2] = temp;
+      if (isContactChecked(newAllContacts[index1])
+      || isContactChecked(newAllContacts[index2])) {
+        let newContacts : contact[] = [];
+        newAllContacts.forEach(contact => {
+          if (isContactChecked(contact)) {
+            newContacts.push(contact);
+          }
+        })
+        setContacts(newContacts);
+      }
+      setAllContacts(newAllContacts);
+    }
+
+    return (
+      <div className="fixed -left-5 top-12 pl-8 pr-6 py-4 bg-stone-300
+      rounded-2xl shadow-lg">
+        <h3 className="text-lg font-semibold font-grotesk uppercase
+        tracking-ultra">
+          Contact
+        </h3>
+        { allContacts.map((contact, index) => {
+          return <div className="my-1 flex gap-x-2 items-center justify-between">
+            <div className="flex gap-x-2">
+              { isContactChecked(contact) ? 
+                <button onClick={() => uncheckContact(contact)}>
+                  <SquareCheckBig size={16}/>
+                </button>
+              :
+                <button onClick={() => checkContact(contact)}>
+                  <Square size={16}/>
+                </button>
+              }
+              <span 
+                className={isContactChecked(contact) ? '' : 'text-stone-500'}
+              >
+                {capitalize(contact.name)}
+              </span>
+            </div>
+            <div className="flex gap-x-2">
+              <button onClick={() => swapContacts(index, index - 1)}>
+                <ChevronUp size={16}/>
+              </button>
+              <button onClick={() => swapContacts(index, index + 1)}>
+                <ChevronDown size={16}/>
+              </button>
+            </div>
+          </div>
+        })}
+      </div>
+    )
+  }
+
   const visibleInRightColumn = (item : rightColumnItem) => {
     for (let i = 0;i < rightColumn.length;i++) {
       const cur = rightColumn[i];
@@ -837,6 +930,7 @@ const Home : FC = () => {
         <div className="bg-stone-700 h-[1px] w-auto mx-24"/>
       </div>
     </div>
+    { generateLeftColumnBuilder() }
     { generateRightColumnBuilder() }
     { focusedRightItem >= 0 ?
       generateFocusedRightItem(focusedRightItem)
