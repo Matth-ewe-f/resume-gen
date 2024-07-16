@@ -24,6 +24,26 @@ app.get('/allData', (req: Request, res: Response) => {
   })
 });
 
+app.post('/experiences', (req: Request, res: Response) => {
+  const newExperience = req.body;
+  fs.readFile(dataFilename, 'utf-8', (err, data) => {
+    if (err) {
+      console.error(err);
+      res.status(500).send("Problem writing data, no changes made");
+    } else {
+      let obj : { experiences: any[] } = JSON.parse(data);
+      obj.experiences.push(newExperience);
+      fs.writeFile(dataFilename, JSON.stringify(obj), err => {
+        if (err) {
+          res.status(500).send("Problem writing data, no changes made");
+        } else {
+          res.status(200).json(newExperience);
+        }
+      })
+    }
+  });
+})
+
 app.put('/experiences/:id', (req: Request, res: Response) => {
   const newExperience = req.body;
   fs.readFile(dataFilename, 'utf-8', (err, data) => {
@@ -44,6 +64,34 @@ app.put('/experiences/:id', (req: Request, res: Response) => {
         })
       } else {
         res.status(500).send("Problem writing data, no changes made");
+      }
+    }
+  });
+})
+
+app.delete('/experiences/:id', (req: Request, res: Response) => {
+  fs.readFile(dataFilename, 'utf-8', (err, data) => {
+    if (err) {
+      console.error(err);
+      res.status(500).send("Problem writing data, nothing was deleted");
+    } else {
+      let obj : { experiences: any[] } = JSON.parse(data);
+      let index = obj.experiences.findIndex((e : any) => e.id == req.params.id);
+      if (index >= 0) {
+        const deletedItem = obj.experiences[index];
+        obj.experiences = [
+          ...obj.experiences.slice(0, index),
+          ...obj.experiences.slice(index + 1)
+        ]
+        fs.writeFile(dataFilename, JSON.stringify(obj), err => {
+          if (err) {
+            res.status(500).send("Problem writing data, nothing was deleted");
+          } else {
+            res.status(200).json(deletedItem);
+          }
+        })
+      } else {
+        res.status(500).send("Problem writing data, nothing was deleted");
       }
     }
   });

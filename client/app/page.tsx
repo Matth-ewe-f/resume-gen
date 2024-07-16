@@ -11,6 +11,7 @@ const Home : FC = () => {
   const [loading, setLoading] = useState(true);
   const [errorText, setErrorText] = useState("");
   const [focusedRightItem, setFocusedRightItem] = useState(-1);
+  const [focusedIsNew, setFocusedIsNew] = useState(false);
   const [extraBullets, setExtraBullets] = useState<bullet[]>([]);
 
   useEffect(() => {
@@ -157,6 +158,20 @@ const Home : FC = () => {
       ]);
     }
 
+    const addExperience = () => {
+      let newExperience : experience = {
+        id: uuid.v4(),
+        title: "New Item",
+        dates: "XXX - Present",
+        subtitle: "Job Title",
+        bullets: []
+      }
+      let newColumn = [...rightColumn, newExperience];
+      setRightColumn(newColumn);
+      setFocusedIsNew(true);
+      setFocusedRightItem(newColumn.length - 1);
+    }
+
     return (
       <div className="fixed -right-5 top-12 px-6 py-4 bg-stone-300 rounded-2xl
       shadow-lg">
@@ -173,6 +188,10 @@ const Home : FC = () => {
             { generateVisibleRightBuilderItem(element, index) }
           </div>
         })}
+        <button className="my-2 flex items-center gap-x-1 text-stone-500"
+        onClick={addExperience}>
+          <Plus size={16}/>Create New Item
+        </button>
         <h3 className="my-2 text-lg font-grotesk font-semibold uppercase
         tracking-ultra">
           Hidden
@@ -345,6 +364,11 @@ const Home : FC = () => {
     }
 
     const revertChanges = () => {
+      if (focusedIsNew) {
+        setRightColumn(rightColumn.slice(0, rightColumn.length - 1));
+        setExtraBullets([]);
+        return;
+      }
       let newExperience = structuredClone(savedVersion);
       newExperience.bullets = [];
       experience.bullets.forEach(oldBullet => {
@@ -363,16 +387,63 @@ const Home : FC = () => {
 
     const saveChanges = () => {
       const body = experience;
-      const url = `http://localhost:3300/experiences/${experience.id}`;
-      axios.put(url, body).then((data) => {
+      let url;
+      if (focusedIsNew) {
+        url = `http://localhost:3300/experiences/`;
+      } else {
+        url = `http://localhost:3300/experiences/${experience.id}`;
+      }
+      (focusedIsNew ? axios.post(url, body) : axios.put(url, body))
+      .then((data) => {
         let newAllRight = allRightColumn.slice();
-        const index = newAllRight.findIndex(e => e.id === experience.id);
-        newAllRight[index] = data.data;
+        if (focusedIsNew) {
+          newAllRight.push(data.data);
+        } else {
+          const index = newAllRight.findIndex(e => e.id === experience.id);
+          newAllRight[index] = data.data;
+        }
         setAllRightColumn(newAllRight);
         alert("Changes saved");
-      }).catch((err) => {
+        if (focusedIsNew) {
+          setFocusedIsNew(false);
+          setFocusedRightItem(-1);
+        }
+      }).catch(() => {
         alert("There was an error, changes not written");
       })
+    }
+
+    const deleteItem = () => {
+      let msg = "This will permanently delete this resume item. Are you sure?";
+      if (confirm(msg)) {
+        const url = `http://localhost:3300/experiences/${experience.id}`;
+        axios.delete(url).then((data) => {
+          let newAllRight = allRightColumn.slice();
+          const index = newAllRight.findIndex(e => e.id == data.data.id);
+          newAllRight = [
+            ...newAllRight.slice(0, index),
+            ...newAllRight.slice(index + 1)
+          ];
+          console.log(index);
+          setAllRightColumn(newAllRight);
+          let newRight = rightColumn.slice();
+          const index2 = newRight.findIndex(e => {
+            return !e.isHeading && (e as experience).id == data.data.id
+          });
+          console.log(index2);
+          if (index2 != -1) {
+            newRight = [
+              ...newRight.slice(0, index2),
+              ...newRight.slice(index2 + 1)
+            ];
+            setRightColumn(newRight);
+          }
+          alert("The item was deleted");
+          setFocusedRightItem(-1);
+        }).catch(() => {
+          alert("There was an error, nothing was deleted");
+        })
+      }
     }
 
     const longDate = experience.dates.length > 20;
@@ -383,32 +454,34 @@ const Home : FC = () => {
         <div className="w-[640px] px-6 py-4 bg-stone-300 rounded-2xl shadow-lg">
           <div className="flex flex-row items-center justify-between">
             <h3 className="text-xl font-grotesk uppercase tracking-ultra">
-              Edit Item
+              { focusedIsNew ? "Create New Item" : "Edit Item"}
             </h3>
-            <button onClick={ onClose }>
-              <X size={32} className="hover:text-stone-400"/>
-            </button>
+            { focusedIsNew ? "" :
+              <button onClick={ onClose }>
+                <X size={32} className="hover:text-stone-400"/>
+              </button>
+            }
           </div>
           <hr className="mb-3 border-t border-stone-700"/>
           <div className="leading-tight [&_*]:bg-transparent">
             <div className="flex flex-row justify-between items-end">
               <input
                 className={"flex-grow font-semibold text-lg max-w-96 " +
-                `${isTitleChanged() ? 'text-red-500' : ''}`}
+                `${isTitleChanged() && !focusedIsNew? 'text-red-500' : ''}`}
                 value={experience.title}
                 onChange={(e) => onTitleChange(e.target.value)}
               />
               <input
                 className={"pb-0.5 text-right text-sm " +
                 `${longDate ? 'w-52' : 'w-40'} ` +
-                `${areDateChanged() ? 'text-red-500' : ''}`}
+                `${areDateChanged() && !focusedIsNew ? 'text-red-500' : ''}`}
                 value={experience.dates}
                 onChange={(e) => onDateChange(e.target.value)}
               />
             </div>
             <input
               className={"relative -top-[5px] w-full text-sm " +
-              `${isSubtitleChanged() ? 'text-red-500' : ''}`}
+              `${isSubtitleChanged() && !focusedIsNew ? 'text-red-500' : ''}`}
               value={experience.subtitle}
               onChange={(e) => onSubtitleChange(e.target.value)}
             />
@@ -417,7 +490,8 @@ const Home : FC = () => {
                 return (
                   <li
                     className={"my-0.5 flex flex-row gap-x-1 " + 
-                    `${isBulletChanged(i) ? 'text-red-500' : ''}`}
+                    `${isBulletChanged(i) && !focusedIsNew ?
+                    'text-red-500' : ''}`}
                     key={`bullet-focused-enabled-${i}`}
                   >
                     <button className="h-fit w-5" 
@@ -472,20 +546,27 @@ const Home : FC = () => {
             </button>
           </div>
           <hr className="mt-4 mb-2 border-t border-stone-600"/>
-          <div className="flex flex-wrap gap-x-6 gap-y-4 justify-center">
+          <div className="flex flex-wrap gap-x-6 gap-y-4 items-end
+          justify-between">
             { isAnythingChanged() ? 
-              <>
-                <button className="px-3 py-1.5 rounded-md text-stone-200
+              <div>
+                <button className="px-3 py-1.5 mr-4 rounded-md text-stone-200
                 bg-stone-800 hover:bg-stone-600" onClick={saveChanges}>
-                  Save Changes
+                  { focusedIsNew ? "Save New Item" : "Save Changes"}
                 </button>
                 <button className="px-3 py-1.5 rounded-md text-stone-200
                 bg-stone-800 hover:bg-stone-600" onClick={revertChanges}>
-                  Revert Changes
+                  { focusedIsNew ? "Cancel New Item" : "Revert Changes" }
                 </button>
-              </>
+              </div>
             :
-              <p>Nothing has been changed</p>
+              <p>No new changes to save</p>
+            }
+            { focusedIsNew ? '' :
+              <button className="px-3 py-1.5 rounded-md text-stone-200
+              bg-red-600 hover:bg-red-400" onClick={deleteItem}>
+                Delete Item
+              </button>
             }
           </div>
         </div>
@@ -632,61 +713,10 @@ const Home : FC = () => {
       className = "";
     }
 
-    // const onTitleChange = (value : string) => {
-    //   let newColumn = rightColumn.slice(0);
-    //   (newColumn[index] as experience).title = value;
-    //   setRightColumn(newColumn);
-    // }
-
-    // const onSubtitleChange = (value : string) => {
-    //   let newColumn = rightColumn.slice(0);
-    //   (newColumn[index] as experience).subtitle = value;
-    //   setRightColumn(newColumn);
-    // }
-
-    // const onDateChange = (value : string) => {
-    //   let newColumn = rightColumn.slice(0);
-    //   (newColumn[index] as experience).dates = value;
-    //   setRightColumn(newColumn);
-    // }
-
-    // const onBulletChange =
-    // (event : ChangeEvent<HTMLTextAreaElement>, bulletIndex : number) => {
-    //   let newColumn = rightColumn.slice(0);
-    //   const text = event.target.value;
-    //   if (text[text.length - 1] == '\n') {
-    //     let newBullets = (newColumn[index] as experience).bullets;
-    //     newBullets = [
-    //       ...newBullets.slice(0, bulletIndex + 1),
-    //       "",
-    //       ...newBullets.slice(bulletIndex + 1)
-    //     ];
-    //     (newColumn[index] as experience).bullets = newBullets;
-    //   } else {
-    //     (newColumn[index] as experience).bullets[bulletIndex] = text;
-    //   }
-    //   setRightColumn(newColumn);
-    // }
-
-    // const onBulletKeyDown = (e : any, bulletIndex : number) => {
-    //   if (e.keyCode == 8) {
-    //     let bullets = (rightColumn[index] as experience).bullets;
-    //     if (bullets[bulletIndex] == "") {
-    //       let newColumn = rightColumn.slice(0);
-    //       bullets = [
-    //         ...bullets.slice(0, bulletIndex),
-    //         ...bullets.slice(bulletIndex + 1)
-    //       ];
-    //       (newColumn[index] as experience).bullets = bullets;
-    //       setRightColumn(newColumn);
-    //     }
-    //   }
-    // }
-
     return (
       <button 
         key={`right-col-${indexInVisible}`}
-        className={`block ${className}`}
+        className={`block w-full ${className}`}
         onClick={ () => setFocusedRightItem(indexInVisible) }
       >
         <div className="text-left leading-tight">
