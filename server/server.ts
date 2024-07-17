@@ -97,6 +97,56 @@ app.delete('/experiences/:id', (req: Request, res: Response) => {
   });
 })
 
+app.post('/contacts', (req: Request, res: Response) => {
+  const newContact = req.body;
+  fs.readFile(dataFilename, 'utf-8', (err, data) => {
+    if (err) {
+      console.error(err);
+      res.status(500).send("Problem writing data, no changes made");
+    } else {
+      let obj : { contacts: any[] } = JSON.parse(data);
+      obj.contacts.push(newContact);
+      fs.writeFile(dataFilename, JSON.stringify(obj), err => {
+        if (err) {
+          res.status(500).send("Problem writing data, no changes made");
+        } else {
+          res.status(200).json(newContact);
+        }
+      })
+    }
+  });
+})
+
+app.delete('/contacts/:name', (req: Request, res: Response) => {
+  fs.readFile(dataFilename, 'utf-8', (err, data) => {
+    if (err) {
+      console.error(err);
+      res.status(500).send("Problem writing data, nothing was deleted");
+    } else {
+      let obj : { contacts: any[] } = JSON.parse(data);
+      let index = obj.contacts.findIndex(
+        (cur : any) => cur.name == req.params.name
+      );
+      if (index >= 0) {
+        const deletedItem = obj.contacts[index];
+        obj.contacts = [
+          ...obj.contacts.slice(0, index),
+          ...obj.contacts.slice(index + 1)
+        ]
+        fs.writeFile(dataFilename, JSON.stringify(obj), err => {
+          if (err) {
+            res.status(500).send("Problem writing data, nothing was deleted");
+          } else {
+            res.status(200).json(deletedItem);
+          }
+        })
+      } else {
+        res.status(500).send("Problem writing data, nothing was deleted");
+      }
+    }
+  });
+})
+
 app.listen(port, () => {
   console.log(`[Server]: I am running at https://localhost:${port}`);
 });

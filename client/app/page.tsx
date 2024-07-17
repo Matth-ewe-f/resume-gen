@@ -1,8 +1,9 @@
 "use client";
 import SmartTextArea from "@/components/SmartTextArea";
-import { ChevronDown, ChevronUp, LinkedinIcon, Mail, MousePointer, Phone, Plus, Square, SquareCheckBig, X } from "lucide-react";
+import { ChevronDown, ChevronUp, LinkedinIcon, Mail, MousePointer, Music, Phone, Plus, Square, SquareCheckBig, X } from "lucide-react";
 import { ChangeEvent, FC, useEffect, useState } from "react";
 import axios from "axios";
+import ContactInput from "@/components/ContactInput";
 const uuid = require("uuid");
 
 const Home : FC = () => {
@@ -15,6 +16,7 @@ const Home : FC = () => {
   // state for the left column
   const [allContacts, setAllContacts] = useState<contact[]>([]);
   const [contacts, setContacts] = useState<contact[]>([]);
+  const [enteringNewContact, setEnteringNewContact] = useState(false);
   // general state
   const [loading, setLoading] = useState(true);
   const [errorText, setErrorText] = useState("");
@@ -32,10 +34,69 @@ const Home : FC = () => {
   }, []);
 
   const capitalize = (s : string) => {
-    return s.split(' ').map(word => word[0].toUpperCase() + word.slice(1)).join(' ');
+    return s.split(' ').map(
+      word => word[0].toUpperCase() + word.slice(1)
+    ).join(' ');
+  }
+
+  const generateNewContactInput = () => {
+    const onClose = () => {
+      setEnteringNewContact(false)
+    }
+
+    const onSubmit = (newContact : contact) => {
+      const url = `http://localhost:3300/contacts/`;
+      axios.post(url, newContact).then(response => {
+        let newAllContacts = allContacts.slice();
+        newAllContacts.push(response.data);
+        setAllContacts(newAllContacts);
+        alert("New contact info created");
+      }).catch(err => {
+        alert("Something went wrong, no new contact info created");
+        console.error(err);
+      })
+      setEnteringNewContact(false);
+    }
+
+    return (
+      <div className="fixed top-0 p-16 w-screen h-screen flex items-center
+      justify-center bg-white bg-opacity-70">
+        <ContactInput onClose={onClose} onSubmit={onSubmit}/>
+      </div>
+    )
   }
 
   const generateLeftColumnBuilder = () => {
+    const addContact = () => {
+      setEnteringNewContact(true);
+    }
+
+    const deleteContact = (contact : contact) => {
+      const msg = "This line of contact info will be permanently deleted. Are you sure?";
+      if (window.confirm(msg)) {
+        const url = `http://localhost:3300/contacts/${contact.name}`;
+        axios.delete(url).then(response => {
+          const deleted = response.data;
+          let index = allContacts.findIndex(cur => cur.name == deleted.name);
+          setAllContacts([
+            ...allContacts.slice(0, index),
+            ...allContacts.slice(index + 1),
+          ])
+          let index2 = contacts.findIndex(cur => cur.name == deleted.name);
+          if (index2 >= 0) {
+            setContacts([
+              ...contacts.slice(0, index),
+              ...contacts.slice(index + 1),
+            ])
+          }
+          alert("Contact info successfully deleted");
+        }).catch((err) => {
+          console.error(err);
+          alert("There was an error; no contact info was deleted");
+        })
+      }
+    }
+
     const isContactChecked = (contact : contact) => {
       return contacts.findIndex(cur => cur.name == contact.name) != -1;
     }
@@ -104,9 +165,8 @@ const Home : FC = () => {
                   <Square size={16}/>
                 </button>
               }
-              <span 
-                className={isContactChecked(contact) ? '' : 'text-stone-500'}
-              >
+              <span className={"inline-block min-w-20 " + 
+              (isContactChecked(contact) ? '' : 'text-stone-500')}>
                 {capitalize(contact.name)}
               </span>
             </div>
@@ -117,9 +177,16 @@ const Home : FC = () => {
               <button onClick={() => swapContacts(index, index + 1)}>
                 <ChevronDown size={16}/>
               </button>
+              <button onClick={() => deleteContact(contact)}>
+                <X size={16} className="text-red-600"/>
+              </button>
             </div>
           </div>
         })}
+        <button className="flex items-center gap-x-1" onClick={addContact}>
+          <Plus size={16} className="text-stone-500"/>
+          <span className="text-stone-500">Add Contact Field</span>
+        </button>
       </div>
     )
   }
@@ -690,6 +757,8 @@ const Home : FC = () => {
         return (
           <MousePointer className="text-stone-600" size={16} strokeWidth={1}/>
         );
+      } else if (contact.name == "reel") {
+        return <Music className="text-stone-600" size={16} strokeWidth={1}/>;
       } else {
         return <Square className="text-stone-600" size={16} strokeWidth={1}/>;
       }
@@ -936,6 +1005,11 @@ const Home : FC = () => {
       generateFocusedRightItem(focusedRightItem)
     :
       ""
+    }
+    { enteringNewContact ? 
+      generateNewContactInput()
+    :
+      ''
     }
   </>;
 }
