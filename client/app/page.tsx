@@ -4,6 +4,7 @@ import { ChevronDown, ChevronUp, LinkedinIcon, Mail, MousePointer, Music, Phone,
 import { ChangeEvent, FC, useEffect, useState } from "react";
 import axios from "axios";
 import ContactInput from "@/components/ContactInput";
+import ExperiencePopup from "@/components/ExperiencePopup";
 const uuid = require("uuid");
 
 const Home : FC = () => {
@@ -12,7 +13,6 @@ const Home : FC = () => {
   const [allRightColumn, setAllRightColumn] = useState<experience[]>([]);
   const [focusedRightItem, setFocusedRightItem] = useState(-1);
   const [focusedIsNew, setFocusedIsNew] = useState(false);
-  const [extraBullets, setExtraBullets] = useState<bullet[]>([]);
   // state for the left column
   const [allContacts, setAllContacts] = useState<contact[]>([]);
   const [contacts, setContacts] = useState<contact[]>([]);
@@ -390,149 +390,17 @@ const Home : FC = () => {
 
     const savedVersion = getSavedVersion();
 
-    const isBulletShowing = (id : string) => {
-      for (let i = 0;i < experience.bullets.length;i++) {
-        if (experience.bullets[i].id == id) {
-          return true;
-        }
-      }
-      return false;
-    }
-
-    const isTitleChanged = () => experience.title !== savedVersion.title;
-
-    const areDateChanged = () => experience.dates !== savedVersion.dates;
-
-    const isSubtitleChanged = () => {
-      return experience.subtitle !== savedVersion.subtitle;
-    }
-
-    const isBulletChanged = (bulletIndex : number) => {
-      const bullet = experience.bullets[bulletIndex];
-      for (let i = 0;i < savedVersion.bullets.length;i++) {
-        const cur = savedVersion.bullets[i];
-        if (cur.id === bullet.id) {
-          return cur.text !== bullet.text;
-        }
-      }
-      // default to true, because that means the bullet was added
-      return true;
-    }
-
-    const isAnythingChanged = () => {
-      if (isTitleChanged() || areDateChanged() || isSubtitleChanged()) {
-        return true;
-      }
-      for (let i = 0;i < experience.bullets.length;i++) {
-        if (isBulletChanged(i)) {
-          return true;
-        }
-      }
-      return false;
-    }
-
-    const onClose = () => {
-      setFocusedRightItem(-1);
-      setExtraBullets([]);
-    }
-
-    const onTitleChange = (value : string) => {
-      let newColumn = rightColumn.slice(0);
-      (newColumn[indexInVisible] as experience).title = value;
-      setRightColumn(newColumn);
-    }
-
-    const onSubtitleChange = (value : string) => {
-      let newColumn = rightColumn.slice(0);
-      (newColumn[indexInVisible] as experience).subtitle = value;
-      setRightColumn(newColumn);
-    }
-
-    const onDateChange = (value : string) => {
-      let newColumn = rightColumn.slice(0);
-      (newColumn[indexInVisible] as experience).dates = value;
-      setRightColumn(newColumn);
-    }
-
-    const onBulletChange =
-    (event : ChangeEvent<HTMLTextAreaElement>, bulletIndex : number) => {
-      let newColumn = rightColumn.slice(0);
-      const text = event.target.value;
-      if (text[text.length - 1] == '\n') {
-        let newBullets = (newColumn[indexInVisible] as experience).bullets;
-        newBullets = [
-          ...newBullets.slice(0, bulletIndex + 1),
-          { id : uuid.v4(), text: "" },
-          ...newBullets.slice(bulletIndex + 1)
-        ];
-        (newColumn[indexInVisible] as experience).bullets = newBullets;
-      } else {
-        (newColumn[indexInVisible] as experience).bullets[bulletIndex].text = text;
-      }
-      setRightColumn(newColumn);
-    }
-
-    const onBulletKeyDown = (e : any, bulletIndex : number) => {
-      if (e.keyCode == 8) {
-        let bullets = (rightColumn[indexInVisible] as experience).bullets;
-        if (bullets[bulletIndex].text == "") {
-          let newColumn = rightColumn.slice(0);
-          bullets = [
-            ...bullets.slice(0, bulletIndex),
-            ...bullets.slice(bulletIndex + 1)
-          ];
-          (newColumn[indexInVisible] as experience).bullets = bullets;
-          setRightColumn(newColumn);
-        }
-      }
-    }
-
-    const addNewBullet = () => {
-      const newBullet = { id: uuid.v4(), text: "New Bullet" };
-      let newColumn = rightColumn.slice();
-      (newColumn[indexInVisible] as experience).bullets.push(newBullet);
-      setRightColumn(newColumn);
-      let newExtras = extraBullets.slice();
-      newExtras.push(newBullet);
-      setExtraBullets(newExtras);
-    }
-
-    const showBullet = (bullet : bullet) => {
-      let newColumn = rightColumn.slice();
-      (newColumn[indexInVisible] as experience).bullets.push(
-        structuredClone(bullet)
-      );
-      setRightColumn(newColumn);
-    }
-
-    const hideBullet = (id : string) => {
-      let newColumn = rightColumn.slice();
-      let experience = newColumn[indexInVisible] as experience;
-      let index = experience.bullets.findIndex(bullet => bullet.id == id);
-      experience.bullets = [
-        ...experience.bullets.slice(0, index),
-        ...experience.bullets.slice(index + 1)
-      ];
-      setRightColumn(newColumn);
-    }
-
-    const swapBullets = (index1 : number, index2 : number) => {
-      if (index1 < 0 || index2 < 0 || index1 >= experience.bullets.length
-      || index2 >= experience.bullets.length) {
-        return;
-      }
-      let newColumn = rightColumn.slice();
-      let newExperience = newColumn[indexInVisible] as experience;
-      const temp = newExperience.bullets[index1];
-      newExperience.bullets[index1] = newExperience.bullets[index2];
-      newExperience.bullets[index2] = temp;
-      setRightColumn(newColumn);
+    const updateFocused = (experience : experience) => {
+      setRightColumn([
+        ...rightColumn.slice(0, indexInVisible),
+        experience,
+        ...rightColumn.slice(indexInVisible + 1)
+      ])
     }
 
     const revertChanges = () => {
       if (focusedIsNew) {
         setRightColumn(rightColumn.slice(0, rightColumn.length - 1));
-        setExtraBullets([]);
         return;
       }
       let newExperience = structuredClone(savedVersion);
@@ -543,7 +411,6 @@ const Home : FC = () => {
           newExperience.bullets.push(structuredClone(newBullet));
         }
       })
-      setExtraBullets([]);
       setRightColumn([
         ...rightColumn.slice(0, indexInVisible),
         newExperience,
@@ -578,7 +445,6 @@ const Home : FC = () => {
         if (focusedIsNew) {
           setFocusedIsNew(false);
           setFocusedRightItem(-1);
-          setExtraBullets([]);
         }
       }).catch(() => {
         alert("There was an error, changes not written");
@@ -612,138 +478,23 @@ const Home : FC = () => {
           }
           alert("The item was deleted");
           setFocusedRightItem(-1);
-          setExtraBullets([]);
         }).catch(() => {
           alert("There was an error, nothing was deleted");
         })
       }
     }
 
-    const longDate = experience.dates.length > 20;
-
     return (
-      <div className="fixed top-0 p-16 w-screen h-screen flex items-center
-      justify-center bg-white bg-opacity-70">
-        <div className="w-[640px] px-6 py-4 bg-stone-300 rounded-2xl shadow-lg">
-          <div className="flex flex-row items-center justify-between">
-            <h3 className="text-xl font-grotesk uppercase tracking-ultra">
-              { focusedIsNew ? "Create New Item" : "Edit Item"}
-            </h3>
-            { focusedIsNew ? "" :
-              <button onClick={ onClose }>
-                <X size={32} className="hover:text-stone-400"/>
-              </button>
-            }
-          </div>
-          <hr className="mb-3 border-t border-stone-700"/>
-          <div className="leading-tight [&_*]:bg-transparent">
-            <div className="flex flex-row justify-between items-end">
-              <input
-                className={"flex-grow font-semibold text-lg max-w-96 " +
-                `${isTitleChanged() && !focusedIsNew? 'text-red-500' : ''}`}
-                value={experience.title}
-                onChange={(e) => onTitleChange(e.target.value)}
-              />
-              <input
-                className={"pb-0.5 text-right text-sm " +
-                `${longDate ? 'w-52' : 'w-40'} ` +
-                `${areDateChanged() && !focusedIsNew ? 'text-red-500' : ''}`}
-                value={experience.dates}
-                onChange={(e) => onDateChange(e.target.value)}
-              />
-            </div>
-            <input
-              className={"relative -top-[5px] w-full text-sm " +
-              `${isSubtitleChanged() && !focusedIsNew ? 'text-red-500' : ''}`}
-              value={experience.subtitle}
-              onChange={(e) => onSubtitleChange(e.target.value)}
-            />
-            <ul className="-mt-1 ml-2 text-sm list-none text-justify">
-              { experience.bullets.map((bullet, i) => {
-                return (
-                  <li
-                    className={"my-0.5 flex flex-row gap-x-1 " + 
-                    `${isBulletChanged(i) && !focusedIsNew ?
-                    'text-red-500' : ''}`}
-                    key={`bullet-focused-enabled-${i}`}
-                  >
-                    <button className="h-fit w-5" 
-                    onClick={ () => hideBullet(bullet.id) }>
-                      <SquareCheckBig size={20} className="pt-0.25"/>
-                    </button>
-                    <button className="h-fit w-5"
-                    onClick={ () => swapBullets(i, i - 1) }>
-                      <ChevronUp size={20}/>
-                    </button>
-                    <button className="h-fit w-5"
-                    onClick={ () => swapBullets(i, i + 1) }>
-                      <ChevronDown size={20}/>
-                    </button>
-                    <SmartTextArea
-                      className="w-full resize-none"
-                      text={bullet.text}
-                      onChange={(e) => onBulletChange(e, i)}
-                      onKeyDown={(e) => onBulletKeyDown(e, i)}
-                    />
-                  </li>
-                )
-              })}
-            </ul>
-            <hr className="my-2 ml-16 border-t border-stone-700
-            border-dashed"/>
-            <ul className="ml-2 text-sm list-none text-justify">
-              { [...savedVersion.bullets, ...extraBullets].map((bullet, i) => {
-                if (!isBulletShowing(bullet.id)) {
-                  return (
-                    <li className="my-0.5 flex flex-row gap-x-1"
-                    key={`bullet-focused-disabled-${i}`}>
-                      <button className="h-fit w-5"
-                      onClick={ () => showBullet(bullet) }>
-                        <Square size={20} className="pt-0.25"/>
-                      </button>
-                      <div className="w-[3.25rem]"/>
-                      <SmartTextArea
-                        className="w-full resize-none  text-stone-400"
-                        text={bullet.text}
-                        disabled={true}
-                      />
-                    </li>
-                  )
-                }
-              })}
-            </ul>
-            <button className="ml-2 mt-2 flex gap-x-2 items-center"
-            onClick={ addNewBullet }>
-              <Plus size={20}/>
-              <span className="pt-0.5 text-sm">Add Bullet Point</span>
-            </button>
-          </div>
-          <hr className="mt-4 mb-2 border-t border-stone-600"/>
-          <div className="flex flex-wrap gap-x-6 gap-y-4 items-end
-          justify-between">
-            { isAnythingChanged() ? 
-              <div>
-                <button className="px-3 py-1.5 mr-4 rounded-md text-stone-200
-                bg-stone-800 hover:bg-stone-600" onClick={saveChanges}>
-                  { focusedIsNew ? "Save New Item" : "Save Changes"}
-                </button>
-                <button className="px-3 py-1.5 rounded-md text-stone-200
-                bg-stone-800 hover:bg-stone-600" onClick={revertChanges}>
-                  { focusedIsNew ? "Cancel New Item" : "Revert Changes" }
-                </button>
-              </div>
-            :
-              <p>No new changes to save</p>
-            }
-            { focusedIsNew ? '' :
-              <button className="px-3 py-1.5 rounded-md text-stone-200
-              bg-red-600 hover:bg-red-400" onClick={deleteItem}>
-                Delete Item
-              </button>
-            }
-          </div>
-        </div>
-      </div>
+      <ExperiencePopup
+        experience={experience}
+        savedVersion={savedVersion}
+        isNewItem={focusedIsNew}
+        updateExperience={updateFocused}
+        saveChanges={saveChanges}
+        revertChanges={revertChanges}
+        delete={deleteItem}
+        onClose={() => { setFocusedRightItem(-1); setFocusedIsNew(false) }}
+      />
     )
   }
 
