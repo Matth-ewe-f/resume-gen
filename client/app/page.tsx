@@ -1,7 +1,6 @@
 "use client";
-import SmartTextArea from "@/components/SmartTextArea";
 import { ChevronDown, ChevronUp, LinkedinIcon, Mail, MousePointer, Music, Phone, Plus, Square, SquareCheckBig, X } from "lucide-react";
-import { ChangeEvent, FC, useEffect, useState } from "react";
+import { FC, useEffect, useState } from "react";
 import axios from "axios";
 import ContactInput from "@/components/ContactInput";
 import ExperiencePopup from "@/components/ExperiencePopup";
