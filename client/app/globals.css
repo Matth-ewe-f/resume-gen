@@ -21,3 +21,7 @@
     text-wrap: balance;
   }
 }
+
+.font-style-inherit {
+  font-style: inherit;
+}

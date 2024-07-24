@@ -1,5 +1,5 @@
-import { ChevronDown, ChevronUp, Plus, Square, SquareCheckBig, X } from "lucide-react";
-import { FC, useState } from "react";
+import { BoxSelect, ChevronDown, ChevronUp, Plus, Square, SquareCheckBig, X } from "lucide-react";
+import { FC } from "react";
 import SmartTextArea from "./SmartTextArea";
 const uuid = require("uuid");
 
@@ -9,7 +9,7 @@ type props = {
   isNewItem: boolean,
   updateExperience: (e : experience) => void,
   revertChanges: () => void,
-  saveChanges: () => void,
+  saveChanges: (e : experience) => void,
   delete: () => void,
   onClose: () => void,
 }
@@ -19,23 +19,6 @@ const ExperiencePopup : FC<props> = (props) => {
   const savedVersion = props.savedVersion;
   const isNewItem = props.isNewItem;
   const updateExperience = props.updateExperience;
-
-  const [extraBullets, setExtraBullets] = useState<bullet[]>([]);
-
-  const addExtraBullet = (bullet : bullet) => {
-    let newBullets = extraBullets.slice();
-    newBullets.push(bullet);
-    setExtraBullets(newBullets);
-  }
-
-  const isBulletShowing = (id : string) => {
-    for (let i = 0;i < experience.bullets.length;i++) {
-      if (experience.bullets[i].id == id) {
-        return true;
-      }
-    }
-    return false;
-  }
 
   const isTitleChanged = () => experience.title !== savedVersion.title;
 
@@ -47,14 +30,8 @@ const ExperiencePopup : FC<props> = (props) => {
 
   const isBulletChanged = (bulletIndex : number) => {
     const bullet = experience.bullets[bulletIndex];
-    for (let i = 0;i < savedVersion.bullets.length;i++) {
-      const cur = savedVersion.bullets[i];
-      if (cur.id === bullet.id) {
-        return cur.text !== bullet.text;
-      }
-    }
-    // default to true, because that means the bullet was added
-    return true;
+    const savedBullet = savedVersion.bullets.find(b => b.id == bullet.id);
+    return savedBullet == undefined || savedBullet.text !== bullet.text;
   }
 
   const isAnythingChanged = () => {
@@ -66,21 +43,27 @@ const ExperiencePopup : FC<props> = (props) => {
         return true;
       }
     }
+    for (let i = 0;i < savedVersion.bullets.length;i++) {
+      const id = savedVersion.bullets[i].id;
+      if (experience.bullets.find(b => b.id == id) == undefined) {
+        return true;
+      }
+    }
     return false;
   }
 
   const onClose = () => {
-    setExtraBullets([]);
     props.onClose();
   }
 
-  const revert = () => {
+  const onRevert = () => {
     props.revertChanges();
-    setExtraBullets([]);
   }
 
-  const save = () => {
-    props.saveChanges();
+  const onSave = () => {
+    let newExperience = structuredClone(experience);
+    newExperience.bullets.forEach(item => item.shown = true);
+    props.saveChanges(newExperience);
     if (isNewItem) {
       onClose();
     }
@@ -108,54 +91,35 @@ const ExperiencePopup : FC<props> = (props) => {
   (value: string, bulletIndex : number) => {
     let newExperience = structuredClone(experience);
     if (value[value.length - 1] == '\n') {
-      let newBullets = newExperience.bullets;
+      let bullets = newExperience.bullets;
       const newBullet = { id : uuid.v4(), text: "" };
-      newBullets = [
-        ...newBullets.slice(0, bulletIndex + 1),
+      bullets = [
+        ...bullets.slice(0, bulletIndex + 1),
         newBullet,
-        ...newBullets.slice(bulletIndex + 1)
+        ...bullets.slice(bulletIndex + 1)
       ];
-      addExtraBullet(newBullet);
     } else {
       newExperience.bullets[bulletIndex].text = value;
     }
     updateExperience(newExperience);
   }
 
-  const onBulletKeyDown = (e : any, bulletIndex : number) => {
-    if (e.keyCode == 8) {
-      if (experience.bullets[bulletIndex].text == "") {
-        let newExperience = structuredClone(experience);
-        newExperience.bullets = [
-          ...newExperience.bullets.slice(0, bulletIndex),
-          ...newExperience.bullets.slice(bulletIndex + 1)
-        ];
-        updateExperience(newExperience);
-      }
-    }
-  }
-
   const addNewBullet = () => {
-    const newBullet = { id: uuid.v4(), text: "New Bullet" };
+    const newBullet = { id: uuid.v4(), text: "New Bullet", shown: true };
     let newExperience = structuredClone(experience);
     newExperience.bullets.push(newBullet);
     updateExperience(newExperience);
-    addExtraBullet(newBullet);
   }
 
-  const showBullet = (bullet : bullet) => {
+  const showBullet = (index : number) => {
     let newExperience = structuredClone(experience);
-    newExperience.bullets.push(structuredClone(bullet));
+    newExperience.bullets[index].shown = true;
     updateExperience(newExperience);
   }
 
-  const hideBullet = (id : string) => {
+  const hideBullet = (index : number) => {
     let newExperience = structuredClone(experience);
-    let index = newExperience.bullets.findIndex(bullet => bullet.id == id);
-    newExperience.bullets = [
-      ...newExperience.bullets.slice(0, index),
-      ...newExperience.bullets.slice(index + 1)
-    ];
+    newExperience.bullets[index].shown = false;
     updateExperience(newExperience);
   }
 
@@ -168,6 +132,24 @@ const ExperiencePopup : FC<props> = (props) => {
     const temp = newExperience.bullets[index1];
     newExperience.bullets[index1] = newExperience.bullets[index2];
     newExperience.bullets[index2] = temp;
+    updateExperience(newExperience);
+  }
+
+  const deleteBullet = (index : number) => {
+    let newExperience = structuredClone(experience);
+    newExperience.bullets = [
+      ...newExperience.bullets.slice(0, index),
+      ...newExperience.bullets.slice(index + 1)
+    ];
+    updateExperience(newExperience);
+  }
+
+  const restoreBullet = (bullet : bullet) => {
+    let newExperience = structuredClone(experience);
+    newExperience.bullets = [
+      ...newExperience.bullets,
+      bullet
+    ];
     updateExperience(newExperience);
   }
 
@@ -192,21 +174,21 @@ const ExperiencePopup : FC<props> = (props) => {
           <div className="flex flex-row justify-between items-end">
             <input
               className={"flex-grow font-semibold text-lg max-w-96 " +
-              `${isTitleChanged() && !isNewItem? 'text-red-500' : ''}`}
+              `${isTitleChanged() && !isNewItem? 'italic' : ''}`}
               value={experience.title}
               onChange={(e) => onTitleChange(e.target.value)}
             />
             <input
               className={"pb-0.5 text-right text-sm " +
               `${longDate ? 'w-52' : 'w-40'} ` +
-              `${areDateChanged() && !isNewItem ? 'text-red-500' : ''}`}
+              `${areDateChanged() && !isNewItem ? 'italic' : ''}`}
               value={experience.dates}
               onChange={(e) => onDateChange(e.target.value)}
             />
           </div>
           <input
             className={"relative -top-[5px] w-full text-sm " +
-            `${isSubtitleChanged() && !isNewItem ? 'text-red-500' : ''}`}
+            `${isSubtitleChanged() && !isNewItem ? 'italic' : ''}`}
             value={experience.subtitle}
             onChange={(e) => onSubtitleChange(e.target.value)}
           />
@@ -214,15 +196,31 @@ const ExperiencePopup : FC<props> = (props) => {
             { experience.bullets.map((bullet, i) => {
               return (
                 <li
-                  className={"my-0.5 flex flex-row gap-x-1 " + 
+                  className={"my-1 flex flex-row gap-x-1 items-start " + 
                   `${isBulletChanged(i) && !isNewItem ?
-                  'text-red-500' : ''}`}
+                  'italic' : ''}`}
                   key={`bullet-focused-enabled-${i}`}
                 >
                   <button className="h-fit w-5" 
-                  onClick={ () => hideBullet(bullet.id) }>
-                    <SquareCheckBig size={20} className="pt-0.25"/>
+                  onClick={ bullet.shown
+                    ? () => hideBullet(i) 
+                    : () => showBullet(i)}
+                  >
+                    { bullet.shown ?
+                      <SquareCheckBig size={20} className="pt-0.25"/>
+                    :
+                      <Square size={20} className="pt-0.25"/>
+                    }
                   </button>
+                  <div className="mx-1 flex-grow min-h-5 flex items-center">
+                    <SmartTextArea
+                      className={"w-full resize-none font-style-inherit "
+                      + "text-justify "
+                      + `${bullet.shown ? '' : 'text-stone-400'}`}
+                      text={bullet.text}
+                      onChange={(e) => onBulletChange(e.target.value, i)}
+                    />
+                  </div>
                   <button className="h-fit w-5"
                   onClick={ () => swapBullets(i, i - 1) }>
                     <ChevronUp size={20}/>
@@ -231,34 +229,36 @@ const ExperiencePopup : FC<props> = (props) => {
                   onClick={ () => swapBullets(i, i + 1) }>
                     <ChevronDown size={20}/>
                   </button>
-                  <SmartTextArea
-                    className="w-full resize-none"
-                    text={bullet.text}
-                    onChange={(e) => onBulletChange(e.target.value, i)}
-                    onKeyDown={(e) => onBulletKeyDown(e, i)}
-                  />
+                  <button className="h-fit w-5 text-red-500"
+                  onClick={ () => deleteBullet(i) }>
+                    <X size={20}/>
+                  </button>
                 </li>
               )
             })}
           </ul>
-          <hr className="my-2 ml-16 border-t border-stone-700
-          border-dashed"/>
           <ul className="ml-2 text-sm list-none text-justify">
-            { [...savedVersion.bullets, ...extraBullets].map((bullet, i) => {
-              if (!isBulletShowing(bullet.id)) {
+            { [...savedVersion.bullets].map((bullet, i) => {
+              if (!experience.bullets.find(b => b.id == bullet.id)) {
                 return (
-                  <li className="my-0.5 flex flex-row gap-x-1"
-                  key={`bullet-focused-disabled-${i}`}>
-                    <button className="h-fit w-5"
-                    onClick={ () => showBullet(bullet) }>
-                      <Square size={20} className="pt-0.25"/>
+                  <li 
+                    className="my-1 flex flex-row
+                    gap-x-1 min-h-5"
+                    key={`bullet-focused-disabled-${i}`}
+                  >
+                    <BoxSelect size={20} className="pt-0.25"/>
+                    <div className="mx-1 flex-grow min-h-5 flex items-center">
+                      <SmartTextArea
+                        className="w-full resize-none line-through italic"
+                        text={bullet.text}
+                        disabled={true}
+                      />
+                    </div>
+                    <button onClick={() => restoreBullet(bullet)}>
+                      <Plus size={20}/>
                     </button>
-                    <div className="w-[3.25rem]"/>
-                    <SmartTextArea
-                      className="w-full resize-none  text-stone-400"
-                      text={bullet.text}
-                      disabled={true}
-                    />
+                    <div className="w-5"/>
+                    <div className="w-5"/>
                   </li>
                 )
               }
@@ -278,14 +278,14 @@ const ExperiencePopup : FC<props> = (props) => {
               <button
                 className="px-3 py-1.5 mr-4 rounded-md text-stone-200
                 bg-stone-800 hover:bg-stone-600"
-                onClick={save}
+                onClick={onSave}
               >
                 { isNewItem ? "Save New Item" : "Save Changes"}
               </button>
               <button
                 className="px-3 py-1.5 rounded-md text-stone-200
                 bg-stone-800 hover:bg-stone-600"
-                onClick={revert}
+                onClick={onRevert}
               >
                 { isNewItem ? "Cancel New Item" : "Revert Changes" }
               </button>

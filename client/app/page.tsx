@@ -22,7 +22,15 @@ const Home : FC = () => {
 
   useEffect(() => {
     axios.get('http://localhost:3300/allData').then(response => {
-      setAllRightColumn(response.data.experiences);
+      setAllRightColumn(response.data.experiences.map(
+        (item : experience) => {
+          item.bullets = item.bullets.map(bullet => {
+            bullet.shown = bullet.shown == undefined ? true : bullet.shown;
+            return bullet;
+          })
+          return item;
+        }
+      ));
       setAllContacts(response.data.contacts);
       setContacts(response.data.contacts);
       setLoading(false);
@@ -403,13 +411,6 @@ const Home : FC = () => {
         return;
       }
       let newExperience = structuredClone(savedVersion);
-      newExperience.bullets = [];
-      experience.bullets.forEach(oldBullet => {
-        let newBullet = savedVersion.bullets.find(e => e.id == oldBullet.id);
-        if (newBullet) {
-          newExperience.bullets.push(structuredClone(newBullet));
-        }
-      })
       setRightColumn([
         ...rightColumn.slice(0, indexInVisible),
         newExperience,
@@ -417,13 +418,7 @@ const Home : FC = () => {
       ]);
     }
 
-    const saveChanges = () => {
-      let body = experience;
-      savedVersion.bullets.forEach(bullet => {
-        if (body.bullets.findIndex(cur => cur.id == bullet.id) == -1) {
-          body.bullets.push(bullet);
-        }
-      })
+    const saveChanges = (body : experience) => {
       let url;
       if (focusedIsNew) {
         url = `http://localhost:3300/experiences/`;
@@ -681,11 +676,13 @@ const Home : FC = () => {
           </span>
           <ul className="-mt-1.5 ml-4 text-mini list-disc text-justify">
             {experience.bullets.map((bullet, j) => {
-              return (
-                <li key={`bullet-${indexInVisible}-${j}`}>
-                  {bullet.text}
-                </li>
-              )
+              if (bullet.shown) {
+                return (
+                  <li key={`bullet-${indexInVisible}-${j}`}>
+                    {bullet.text}
+                  </li>
+                )
+              }
             })}
           </ul>
         </div>

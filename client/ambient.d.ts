@@ -9,6 +9,7 @@ type experience = {
 type bullet = {
   id: string,
   text: string,
+  shown?: boolean,
 }
 
 type heading = {
