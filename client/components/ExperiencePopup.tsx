@@ -5,7 +5,6 @@ const uuid = require("uuid");
 
 type props = {
   experience: experience,
-  savedVersion: experience,
   isNewItem: boolean,
   updateExperience: (e : experience) => void,
   revertChanges: () => void,
@@ -16,9 +15,8 @@ type props = {
 
 const ExperiencePopup : FC<props> = (props) => {
   const experience = props.experience;
-  const savedVersion = props.savedVersion;
+  const savedVersion = props.experience.oldVer || props.experience;
   const isNewItem = props.isNewItem;
-  const updateExperience = props.updateExperience;
 
   const isTitleChanged = () => experience.title !== savedVersion.title;
 
@@ -58,11 +56,24 @@ const ExperiencePopup : FC<props> = (props) => {
 
   const onRevert = () => {
     props.revertChanges();
+    if (isNewItem) {
+      props.onClose();
+    }
+  }
+
+  const onUpdate = (newVer : experience) => {
+    if (!experience.oldVer) {
+      newVer.oldVer = structuredClone(experience);
+    }
+    props.updateExperience(newVer);
   }
 
   const onSave = () => {
     let newExperience = structuredClone(experience);
-    newExperience.bullets.forEach(item => item.shown = true);
+    delete newExperience.oldVer;
+    delete newExperience.shown;
+    console.log(newExperience);
+    newExperience.bullets.forEach(item => delete item.shown);
     props.saveChanges(newExperience);
     if (isNewItem) {
       onClose();
@@ -72,19 +83,19 @@ const ExperiencePopup : FC<props> = (props) => {
   const onTitleChange = (value : string) => {
     let newExperience = structuredClone(experience);
     newExperience.title = value;
-    updateExperience(newExperience);
+    onUpdate(newExperience);
   }
 
   const onSubtitleChange = (value : string) => {
     let newExperience = structuredClone(experience);
     newExperience.subtitle = value;
-    updateExperience(newExperience);
+    onUpdate(newExperience);
   }
 
   const onDateChange = (value : string) => {
     let newExperience = structuredClone(experience);
     newExperience.dates = value;
-    updateExperience(newExperience);
+    onUpdate(newExperience);
   }
 
   const onBulletChange =
@@ -101,26 +112,26 @@ const ExperiencePopup : FC<props> = (props) => {
     } else {
       newExperience.bullets[bulletIndex].text = value;
     }
-    updateExperience(newExperience);
+    onUpdate(newExperience);
   }
 
   const addNewBullet = () => {
     const newBullet = { id: uuid.v4(), text: "New Bullet", shown: true };
     let newExperience = structuredClone(experience);
     newExperience.bullets.push(newBullet);
-    updateExperience(newExperience);
+    onUpdate(newExperience);
   }
 
   const showBullet = (index : number) => {
     let newExperience = structuredClone(experience);
     newExperience.bullets[index].shown = true;
-    updateExperience(newExperience);
+    onUpdate(newExperience);
   }
 
   const hideBullet = (index : number) => {
     let newExperience = structuredClone(experience);
     newExperience.bullets[index].shown = false;
-    updateExperience(newExperience);
+    onUpdate(newExperience);
   }
 
   const swapBullets = (index1 : number, index2 : number) => {
@@ -132,7 +143,7 @@ const ExperiencePopup : FC<props> = (props) => {
     const temp = newExperience.bullets[index1];
     newExperience.bullets[index1] = newExperience.bullets[index2];
     newExperience.bullets[index2] = temp;
-    updateExperience(newExperience);
+    onUpdate(newExperience);
   }
 
   const deleteBullet = (index : number) => {
@@ -141,7 +152,7 @@ const ExperiencePopup : FC<props> = (props) => {
       ...newExperience.bullets.slice(0, index),
       ...newExperience.bullets.slice(index + 1)
     ];
-    updateExperience(newExperience);
+    onUpdate(newExperience);
   }
 
   const restoreBullet = (bullet : bullet) => {
@@ -150,7 +161,7 @@ const ExperiencePopup : FC<props> = (props) => {
       ...newExperience.bullets,
       bullet
     ];
-    updateExperience(newExperience);
+    onUpdate(newExperience);
   }
 
   const longDate = experience.dates.length > 20;

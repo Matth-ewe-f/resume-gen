@@ -8,8 +8,7 @@ const uuid = require("uuid");
 
 const Home : FC = () => {
   // state for the right column
-  const [rightColumn, setRightColumn] = useState<rightColumnItem[]>([]);
-  const [allRightColumn, setAllRightColumn] = useState<experience[]>([]);
+  const [allRightColumn, setAllRightColumn] = useState<rightColumnItem[]>([]);
   const [focusedRightItem, setFocusedRightItem] = useState(-1);
   const [focusedIsNew, setFocusedIsNew] = useState(false);
   // state for the left column
@@ -28,6 +27,7 @@ const Home : FC = () => {
             bullet.shown = bullet.shown == undefined ? true : bullet.shown;
             return bullet;
           })
+          item.shown = false;
           return item;
         }
       ));
@@ -198,55 +198,64 @@ const Home : FC = () => {
     )
   }
 
-  const visibleInRightColumn = (item : rightColumnItem) => {
-    for (let i = 0;i < rightColumn.length;i++) {
-      const cur = rightColumn[i];
-      if (item.isHeading && cur.isHeading) {
-        if ((item as heading).text === (cur as heading).text) {
-          return true;
-        }
-      } else if (!item.isHeading && !cur.isHeading) {
-        if ((item as experience).id === (cur as experience).id) {
-          return true;
-        }
-      }
+  const getNumShownRightItems = () => {
+    let count = 0;
+    let condition = true;
+    while (condition) {
+      const cur = allRightColumn[count];
+      condition = allRightColumn.length > count;
+      condition = condition && (cur.shown == true || cur.isHeading == true);
+      count++;
     }
-    return false;
+    return count - 1;
   }
 
-  const checkRightColumnItem = (indexInAll : number) => {
-    let newColumn = rightColumn.slice();
-    newColumn.push(structuredClone(allRightColumn[indexInAll]));
-    setRightColumn(newColumn);
+  const checkRightColumnItem = (index : number) => {
+    let newColumn = allRightColumn.slice();
+    let newIndex = getNumShownRightItems();
+    newColumn[index].shown = true;
+    newColumn = [
+      ...newColumn.slice(0, newIndex),
+      newColumn[index],
+      ...newColumn.slice(newIndex, index),
+      ...newColumn.slice(index + 1)
+    ]
+    setAllRightColumn(newColumn);
   }
 
-  const uncheckRightColumnItem = (indexInVisible : number) => {
-    setRightColumn([
-      ...rightColumn.slice(0, indexInVisible),
-      ...rightColumn.slice(indexInVisible + 1)
-    ]);
+  const uncheckRightColumnItem = (index : number) => {
+    let newColumn = allRightColumn.slice();
+    let newIndex = getNumShownRightItems();
+    newColumn[index].shown = false;
+    newColumn = [
+      ...newColumn.slice(0, index),
+      ...newColumn.slice(index + 1, newIndex),
+      newColumn[index],
+      ...newColumn.slice(newIndex)
+    ]
+    setAllRightColumn(newColumn);
   }
 
   const switchRightColumnItems =
-  (indexInVisible1 : number, indexInVisible2 : number) => {
-    if (indexInVisible1 < 0 || indexInVisible2 < 0
-    || indexInVisible1 >= rightColumn.length
-    || indexInVisible2 >= rightColumn.length) {
+  (index1 : number, index2 : number) => {
+    const bound = allRightColumn.length;
+    if (index1 < 0 || index2 < 0 || index1 >= bound || index2 >= bound) {
       return;
     }
-    let newColumn = rightColumn.slice();
-    const temp = newColumn[indexInVisible1];
-    newColumn[indexInVisible1] = newColumn[indexInVisible2];
-    newColumn[indexInVisible2] = temp;
-    setRightColumn(newColumn);
+    let newColumn = allRightColumn.slice();
+    const temp = newColumn[index1];
+    newColumn[index1] = newColumn[index2];
+    newColumn[index2] = temp;
+    setAllRightColumn(newColumn);
   }
 
   const generateVisibleRightBuilderItem =
   (item : rightColumnItem, indexInVisible : number) => {
+
     const onHeadingChange = (value : string) => {
-      let newColumn = rightColumn.slice();
+      let newColumn = allRightColumn.slice();
       (newColumn[indexInVisible] as heading).text = value;
-      setRightColumn(newColumn);
+      setAllRightColumn(newColumn);
     }
 
     const ChevronUpClick = () => { 
@@ -325,9 +334,11 @@ const Home : FC = () => {
 
   const generateRightColumnBuilder = () => {
     const addHeading = () => {
-      setRightColumn([
+      const index = getNumShownRightItems();
+      setAllRightColumn([
+        ...allRightColumn.slice(0, index),
         { text: "New Heading", isHeading: true },
-        ...rightColumn
+        ...allRightColumn.slice(index)
       ]);
     }
 
@@ -337,12 +348,13 @@ const Home : FC = () => {
         title: "New Item",
         dates: "XXX - Present",
         subtitle: "Job Title",
-        bullets: []
+        bullets: [],
+        shown: true,
       }
-      let newColumn = [...rightColumn, newExperience];
-      setRightColumn(newColumn);
+      let newColumn = [newExperience, ...allRightColumn];
+      setAllRightColumn(newColumn);
       setFocusedIsNew(true);
-      setFocusedRightItem(newColumn.length - 1);
+      setFocusedRightItem(0);
     }
 
     return (
@@ -352,69 +364,60 @@ const Home : FC = () => {
         tracking-ultra">
           Shown
         </h3>
-        <button className="flex items-center gap-x-1 text-stone-500"
-        onClick={addHeading}>
-          <Plus size={16}/>Add Heading
-        </button>
-        { rightColumn.map((element, index) => {
-          return <div key={`right-col-builder-checked-${index}`}>
-            { generateVisibleRightBuilderItem(element, index) }
-          </div>
+        { allRightColumn.map((element, index) => {
+          if (element.shown || element.isHeading) {
+            return <div key={`right-col-builder-checked-${index}`}>
+              { generateVisibleRightBuilderItem(element, index) }
+            </div>
+          }
         })}
-        <button className="my-2 flex items-center gap-x-1 text-stone-500"
+        <button className="my-1.5 flex items-center gap-x-1 text-stone-500"
+        onClick={addHeading}>
+          <Plus size={16} className="mr-1"/>Add Heading
+        </button>
+        <button className="my-1.5 flex items-center gap-x-1 text-stone-500"
         onClick={addExperience}>
-          <Plus size={16}/>Create New Item
+          <Plus size={16} className="mr-1"/>Create New Item
         </button>
         <h3 className="my-2 text-lg font-grotesk font-semibold uppercase
         tracking-ultra">
           Hidden
         </h3>
         { allRightColumn.map((element, index) => {
-          if (!visibleInRightColumn(element)) {
-            return generateUncheckedRightBuilderItem(element, index);
+          if (!element.shown && !element.isHeading) {
+            let exp = element as experience;
+            return generateUncheckedRightBuilderItem(exp, index);
           }
         })}
       </div>
     )
   }
 
-  const generateFocusedRightItem = (indexInVisible : number) => {
-    if (rightColumn.length <= indexInVisible
-    || rightColumn[indexInVisible].isHeading) {
+  const generateFocusedRightItem = (index : number) => {
+    if (allRightColumn.length <= index || allRightColumn[index].isHeading) {
       return <></>;
     }
 
-    const experience = rightColumn[indexInVisible] as experience;
-
-    const getSavedVersion = () => {
-      for (let i = 0;i < allRightColumn.length;i++) {
-        if (allRightColumn[i].id == experience.id) {
-          return allRightColumn[i];
-        }
-      }
-      return { id: "", title: "", dates: "", subtitle: "", bullets: [] };
-    }
-
-    const savedVersion = getSavedVersion();
+    const experience = allRightColumn[index] as experience;
 
     const updateFocused = (experience : experience) => {
-      setRightColumn([
-        ...rightColumn.slice(0, indexInVisible),
+      setAllRightColumn([
+        ...allRightColumn.slice(0, index),
         experience,
-        ...rightColumn.slice(indexInVisible + 1)
+        ...allRightColumn.slice(index + 1)
       ])
     }
 
     const revertChanges = () => {
       if (focusedIsNew) {
-        setRightColumn(rightColumn.slice(0, rightColumn.length - 1));
+        setAllRightColumn([...allRightColumn.slice(1)]);
         return;
       }
-      let newExperience = structuredClone(savedVersion);
-      setRightColumn([
-        ...rightColumn.slice(0, indexInVisible),
+      let newExperience = structuredClone(experience.oldVer) as experience;
+      setAllRightColumn([
+        ...allRightColumn.slice(0, index),
         newExperience,
-        ...rightColumn.slice(indexInVisible + 1)
+        ...allRightColumn.slice(index + 1)
       ]);
     }
 
@@ -426,13 +429,27 @@ const Home : FC = () => {
         url = `http://localhost:3300/experiences/${experience.id}`;
       }
       (focusedIsNew ? axios.post(url, body) : axios.put(url, body))
-      .then((data) => {
+      .then((response) => {
         let newAllRight = allRightColumn.slice();
         if (focusedIsNew) {
-          newAllRight.push(data.data);
+          response.data.bullets = response.data.bullets.map((b : bullet) => {
+            b.shown = true;
+            return b;
+          })
+          response.data.shown = true;
+          newAllRight = [
+            response.data,
+            ...newAllRight.slice(1),
+          ];
         } else {
-          const index = newAllRight.findIndex(e => e.id === experience.id);
-          newAllRight[index] = data.data;
+          const index = newAllRight.findIndex(
+            e => !e.isHeading && (e as experience).id === experience.id
+          );
+          response.data.bullet = response.data.bullets.map((b : bullet) => {
+            b.shown = experience.bullets.find(i => i.id == b.id)?.shown
+          })
+          newAllRight[index] = response.data;
+          newAllRight[index].shown = true;
         }
         setAllRightColumn(newAllRight);
         alert("Changes saved");
@@ -451,25 +468,14 @@ const Home : FC = () => {
         const url = `http://localhost:3300/experiences/${experience.id}`;
         axios.delete(url).then((data) => {
           let newAllRight = allRightColumn.slice();
-          const index = newAllRight.findIndex(e => e.id == data.data.id);
+          const index = newAllRight.findIndex(
+            e => !e.isHeading && (e as experience).id == data.data.id
+          );
           newAllRight = [
             ...newAllRight.slice(0, index),
             ...newAllRight.slice(index + 1)
           ];
-          console.log(index);
           setAllRightColumn(newAllRight);
-          let newRight = rightColumn.slice();
-          const index2 = newRight.findIndex(e => {
-            return !e.isHeading && (e as experience).id == data.data.id
-          });
-          console.log(index2);
-          if (index2 != -1) {
-            newRight = [
-              ...newRight.slice(0, index2),
-              ...newRight.slice(index2 + 1)
-            ];
-            setRightColumn(newRight);
-          }
           alert("The item was deleted");
           setFocusedRightItem(-1);
         }).catch(() => {
@@ -481,7 +487,6 @@ const Home : FC = () => {
     return (
       <ExperiencePopup
         experience={experience}
-        savedVersion={savedVersion}
         isNewItem={focusedIsNew}
         updateExperience={updateFocused}
         saveChanges={saveChanges}
@@ -635,9 +640,9 @@ const Home : FC = () => {
   (heading : heading, index : number, className?: string) => {
 
     const onHeadingChange = (value : string) => {
-      let newColumn = rightColumn.slice();
+      let newColumn = allRightColumn.slice();
       (newColumn[index] as heading).text = value;
-      setRightColumn(newColumn);
+      setAllRightColumn(newColumn);
     }
 
     return (
@@ -651,16 +656,16 @@ const Home : FC = () => {
   }
 
   const generateExperienceJSX = 
-  (experience : experience, indexInVisible : number, className?: string) => {
+  (experience : experience, index : number, className?: string) => {
     if (className == undefined) {
       className = "";
     }
 
     return (
       <button 
-        key={`right-col-${indexInVisible}`}
+        key={`right-col-${index}`}
         className={`block w-full ${className}`}
-        onClick={ () => setFocusedRightItem(indexInVisible) }
+        onClick={ () => setFocusedRightItem(index) }
       >
         <div className="text-left leading-tight">
           <div className="flex flex-row justify-between items-end">
@@ -678,7 +683,7 @@ const Home : FC = () => {
             {experience.bullets.map((bullet, j) => {
               if (bullet.shown) {
                 return (
-                  <li key={`bullet-${indexInVisible}-${j}`}>
+                  <li key={`bullet-${index}-${j}`}>
                     {bullet.text}
                   </li>
                 )
@@ -734,10 +739,10 @@ const Home : FC = () => {
             <div className="flex-grow bg-stone-100 min-h-4"/>
           </div>
           <div className="flex-grow-[13] pl-6 pr-20 pt-2 pb-2">
-            {rightColumn.map((item, index) => {
+            {allRightColumn.map((item, index) => {
               if (item.isHeading) {
                 return generateHeadingJSX(item as heading, index, "mt-1")
-              } else {
+              } else if (item.shown) {
                 return generateExperienceJSX(item as experience, index, "my-2.5");
               }
             })}
@@ -748,16 +753,8 @@ const Home : FC = () => {
     </div>
     { generateLeftColumnBuilder() }
     { generateRightColumnBuilder() }
-    { focusedRightItem >= 0 ?
-      generateFocusedRightItem(focusedRightItem)
-    :
-      ""
-    }
-    { enteringNewContact ? 
-      generateNewContactInput()
-    :
-      ''
-    }
+    { focusedRightItem >= 0 ? generateFocusedRightItem(focusedRightItem) : "" }
+    { enteringNewContact ? generateNewContactInput() : '' }
   </>;
 }
 
