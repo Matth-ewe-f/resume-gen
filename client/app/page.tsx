@@ -2,7 +2,7 @@
 import { LinkedinIcon, Mail, MousePointer, Music, Phone, Square } from "lucide-react";
 import { FC, useEffect, useState } from "react";
 import axios from "axios";
-import ContactInput from "@/components/ContactInput";
+import ContactPopup from "@/components/ContactPopup";
 import ExperiencePopup from "@/components/ExperiencePopup";
 import RightColBuilder from "@/components/RightColBuilder";
 import LeftColBuilder from "@/components/LeftColBuilder";
@@ -15,6 +15,7 @@ const Page : FC = () => {
   // state for the left column
   const [contacts, setContacts] = useState<contact[]>([]);
   const [enteringNewContact, setEnteringNewContact] = useState(false);
+  const [skills, setSkills] = useState<skillList[]>([]);
   // general state
   const [loading, setLoading] = useState(true);
   const [errorText, setErrorText] = useState("");
@@ -37,6 +38,15 @@ const Page : FC = () => {
           return item;
         }
       ));
+      setSkills(response.data.skills.map(
+        (list : skillList) => {
+          list.shown = true;
+          list.items = list.items.map(item => {
+            item.shown = true; return item 
+          });
+          return list;
+        }
+      ))
       setLoading(false);
     }).catch(err => {
       console.error(err);
@@ -67,7 +77,7 @@ const Page : FC = () => {
     return (
       <div className="fixed top-0 p-16 w-screen h-screen flex items-center
       justify-center bg-white bg-opacity-70">
-        <ContactInput onClose={onClose} onSubmit={onSubmit}/>
+        <ContactPopup onClose={onClose} onSubmit={onSubmit}/>
       </div>
     )
   }
@@ -76,7 +86,9 @@ const Page : FC = () => {
     return <LeftColBuilder
       contacts={contacts}
       updateContacts={setContacts}
-      onAddContact={ () => { setEnteringNewContact(true) }}
+      onAddContact={ () => { setEnteringNewContact(true) } }
+      skills={skills}
+      updateSkills={setSkills}
     />
   }
 
@@ -269,22 +281,27 @@ const Page : FC = () => {
   }
 
   const generateSkillsSection = () => {
+    const createListString = (list : skillList) => {
+      let s = list.items.map(item => item.shown ? item.text : '').join(', ');
+      return s
+    }
+
     return <>
       <h5 className="my-2 text font-grotesk font-medium uppercase
       tracking-ultra">
         Skills
       </h5>
       <div className="text-mini leading-tight">
-        <p className="font-bold">Programming Languages</p>
-        <p>C#, C++, C, JS/TypeScript, Java, Python</p>
-        <p className="mt-2 font-bold">Game Audio Software</p>
-        <p>Wwise, Unity Audio System</p>
-        <p className="mt-2 font-bold">Game Engines</p>
-        <p>Unity, Godot, RPG Maker VX Ace</p>
-        <p className="mt-2 font-bold">Languages</p>
-        <p>Conversational Japanese</p>
-        <p className="mt-2 font-bold">Relevant Coursework</p>
-        <p className="mr-6 text-justify">Software System Design, Object-Oriented Software Engineering, Data Structures, Operating Systems, Sound Design for Games, Linear Algebra, Calculus</p>
+        { skills.map(list => {
+          if (list.shown) {
+            return <>
+              <p className="font-bold">{list.name}</p>
+              <p className="mr-6 mb-2 text-justify">
+                { createListString(list) }
+              </p>
+            </>
+          }
+        }) }
       </div>
     </>
   }

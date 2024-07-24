@@ -27,3 +27,14 @@ type contact = {
   link?: string,
   shown?: boolean,
 }
+
+type skillList = {
+  name: string,
+  items: skillItem[],
+  shown?: boolean,
+}
+
+type skillItem = {
+  text: string,
+  shown?: boolean,
+}

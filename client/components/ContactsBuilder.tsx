@@ -11,7 +11,7 @@ type props = {
 const ContactsBuilder : FC<props> = (props) => {
   const allItems = props.allItems;
   const updateItems = props.updateItems;
-  const [open, setOpen] = useState(true);
+  const [open, setOpen] = useState(false);
 
   const capitalize = (s : string) => {
     return s.split(' ').map(

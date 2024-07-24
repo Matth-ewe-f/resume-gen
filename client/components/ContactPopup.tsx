@@ -8,7 +8,7 @@ type props = {
   onClose : () => void
 }
 
-const ContactInput : FC<props> = ({onSubmit, onClose}) => {
+const ContactPopup : FC<props> = ({onSubmit, onClose}) => {
   const [name, setName] = useState("");
   const [value, setValue] = useState("");
   const [link, setLink] = useState("");
@@ -57,4 +57,4 @@ const ContactInput : FC<props> = ({onSubmit, onClose}) => {
   );
 }
 
-export default ContactInput
+export default ContactPopup
