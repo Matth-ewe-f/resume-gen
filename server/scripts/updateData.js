@@ -7,11 +7,12 @@ fs.readFile(filename, 'utf-8', (err, data) => {
     console.error(err);
   } else {
     let obj = JSON.parse(data);
-    obj.contacts = [
-      { name: "phone", value: "215-760-8565" },
-      { name: "email", value: "matthew.flynn.sound@gmail.com", link: "mailto:matthew.flynn.sound@gmail.com"},
-      { name: "website", value: "http://matthewflynnmusic.com/", link: "http://matthewflynnmusic.com/" },
-      { name: "reel", value: "https://play.reelcrafter.com/FlynnSound/Reel/", link: "https://play.reelcrafter.com/FlynnSound/Reel/" },
+    obj.skills = [
+      { name: "Programming Languanges", items: ["C#", "C++", "C", "JS/TypeScript", "Java", "Python"] },
+      { name: "Game Audio Software", items: ["Wwise", "Unity Audio System"] },
+      { name: "Game Engines", items: ["Unity", "Godot", "RPG Maker VX Ace"] },
+      { name: "Languages", items: ["Conversational Japanese"] },
+      { name: "Relevant Coursework", items: ["Software System Design", "Object-Oriented Software Engineering", "Data Structures", "Operating Systems", "Sound Design for Games", "Linear Algebra", "Calculus"] }
     ]
     const newData = JSON.stringify(obj);
     fs.writeFile(filename, newData, null, () => {
