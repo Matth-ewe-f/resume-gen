@@ -13,7 +13,6 @@ const Home : FC = () => {
   const [focusedIsNew, setFocusedIsNew] = useState(false);
   // state for the left column
   const [allContacts, setAllContacts] = useState<contact[]>([]);
-  const [contacts, setContacts] = useState<contact[]>([]);
   const [enteringNewContact, setEnteringNewContact] = useState(false);
   // general state
   const [loading, setLoading] = useState(true);
@@ -31,8 +30,13 @@ const Home : FC = () => {
           return item;
         }
       ));
-      setAllContacts(response.data.contacts);
-      setContacts(response.data.contacts);
+      setAllContacts(response.data.contacts.map(
+        (item : contact) => {
+          item.shown = true;
+          return item;
+        }
+      ));
+      // setContacts(response.data.contacts);
       setLoading(false);
     }).catch(err => {
       console.error(err);
@@ -52,6 +56,7 @@ const Home : FC = () => {
     }
 
     const onSubmit = (newContact : contact) => {
+      newContact.shown = true;
       const url = `http://localhost:3300/contacts/`;
       axios.post(url, newContact).then(response => {
         let newAllContacts = allContacts.slice();
@@ -89,13 +94,6 @@ const Home : FC = () => {
             ...allContacts.slice(0, index),
             ...allContacts.slice(index + 1),
           ])
-          let index2 = contacts.findIndex(cur => cur.name == deleted.name);
-          if (index2 >= 0) {
-            setContacts([
-              ...contacts.slice(0, index),
-              ...contacts.slice(index + 1),
-            ])
-          }
           alert("Contact info successfully deleted");
         }).catch((err) => {
           console.error(err);
@@ -104,52 +102,27 @@ const Home : FC = () => {
       }
     }
 
-    const isContactChecked = (contact : contact) => {
-      return contacts.findIndex(cur => cur.name == contact.name) != -1;
+    const checkContact = (index : number) => {
+      let newContacts = allContacts.slice();
+      newContacts[index].shown = true;
+      setAllContacts(newContacts);
     }
 
-    const checkContact = (contact : contact) => {
-      let index1 = 0;
-      let index2 = 0;
-      while (allContacts[index1].name !== contact.name) {
-        if (isContactChecked(allContacts[index1++])) {
-          index2++;
-        }
-      }
-      setContacts([
-        ...contacts.slice(0, index2),
-        contact,
-        ...contacts.slice(index2)
-      ]);
-    }
-
-    const uncheckContact = (contact : contact) => {
-      let index = contacts.findIndex(cur => cur.name == contact.name);
-      setContacts([
-        ...contacts.slice(0, index),
-        ...contacts.slice(index + 1)
-      ]);
+    const uncheckContact = (index : number) => {
+      let newContacts = allContacts.slice();
+      newContacts[index].shown = false;
+      setAllContacts(newContacts);
     }
 
     const swapContacts = (index1 : number, index2 : number) => {
-      if (index1 < 0 || index2 < 0 || index1 >= allContacts.length
-      || index2 >= allContacts.length) {
+      const bound = allContacts.length;
+      if (index1 < 0 || index2 < 0 || index1 >= bound || index2 >= bound) {
         return;
       }
       let newAllContacts = allContacts.slice();
       let temp = newAllContacts[index1];
       newAllContacts[index1] = newAllContacts[index2];
       newAllContacts[index2] = temp;
-      if (isContactChecked(newAllContacts[index1])
-      || isContactChecked(newAllContacts[index2])) {
-        let newContacts : contact[] = [];
-        newAllContacts.forEach(contact => {
-          if (isContactChecked(contact)) {
-            newContacts.push(contact);
-          }
-        })
-        setContacts(newContacts);
-      }
       setAllContacts(newAllContacts);
     }
 
@@ -163,17 +136,17 @@ const Home : FC = () => {
         { allContacts.map((contact, index) => {
           return <div className="my-1 flex gap-x-2 items-center justify-between">
             <div className="flex gap-x-2">
-              { isContactChecked(contact) ? 
-                <button onClick={() => uncheckContact(contact)}>
+              { contact.shown ? 
+                <button onClick={ () => uncheckContact(index) }>
                   <SquareCheckBig size={16}/>
                 </button>
               :
-                <button onClick={() => checkContact(contact)}>
+                <button onClick={ () => checkContact(index) }>
                   <Square size={16}/>
                 </button>
               }
               <span className={"inline-block min-w-20 " + 
-              (isContactChecked(contact) ? '' : 'text-stone-500')}>
+              (contact.shown ? '' : 'text-stone-500')}>
                 {capitalize(contact.name)}
               </span>
             </div>
@@ -536,14 +509,16 @@ const Home : FC = () => {
       tracking-ultra">
         Contact
       </h5>
-      { contacts.map(contact => {
-        return (
-          <div className="my-2 flex flex-row items-center flex-nowrap gap-x-2"
-          key={`contact-${contact.name}`}>
-            { getIconForContact(contact) }
-            { getTextForContact(contact) }
-          </div>
-        )
+      { allContacts.map(contact => {
+        if (contact.shown) {
+          return (
+            <div className="my-2 flex flex-row items-center flex-nowrap gap-x-2"
+            key={`contact-${contact.name}`}>
+              { getIconForContact(contact) }
+              { getTextForContact(contact) }
+            </div>
+          )
+        }
       })}
     </>
   }

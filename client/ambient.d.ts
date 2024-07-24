@@ -25,4 +25,5 @@ type contact = {
   name: string,
   value: string,
   link?: string,
+  shown?: boolean,
 }
