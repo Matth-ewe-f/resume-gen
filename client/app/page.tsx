@@ -1,5 +1,5 @@
 "use client";
-import { LinkedinIcon, Mail, MousePointer, Music, Phone, Plus, Square, SquareCheckBig, X } from "lucide-react";
+import { LinkedinIcon, Mail, MousePointer, Music, Phone, Square } from "lucide-react";
 import { FC, useEffect, useState } from "react";
 import axios from "axios";
 import ContactInput from "@/components/ContactInput";
