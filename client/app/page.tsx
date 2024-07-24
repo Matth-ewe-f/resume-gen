@@ -5,7 +5,7 @@ import axios from "axios";
 import ContactInput from "@/components/ContactInput";
 import ExperiencePopup from "@/components/ExperiencePopup";
 import RightColBuilder from "@/components/RightColBuilder";
-const uuid = require("uuid");
+import LeftColBuilder from "@/components/LeftColBuilder";
 
 const Page : FC = () => {
   // state for the right column
@@ -37,7 +37,6 @@ const Page : FC = () => {
           return item;
         }
       ));
-      // setContacts(response.data.contacts);
       setLoading(false);
     }).catch(err => {
       console.error(err);
@@ -80,96 +79,11 @@ const Page : FC = () => {
   }
 
   const generateLeftColumnBuilder = () => {
-    const addContact = () => {
-      setEnteringNewContact(true);
-    }
-
-    const deleteContact = (contact : contact) => {
-      const msg = "This line of contact info will be permanently deleted. Are you sure?";
-      if (window.confirm(msg)) {
-        const url = `http://localhost:3300/contacts/${contact.name}`;
-        axios.delete(url).then(response => {
-          const deleted = response.data;
-          let index = contacts.findIndex(cur => cur.name == deleted.name);
-          setContacts([
-            ...contacts.slice(0, index),
-            ...contacts.slice(index + 1),
-          ])
-          alert("Contact info successfully deleted");
-        }).catch((err) => {
-          console.error(err);
-          alert("There was an error; no contact info was deleted");
-        })
-      }
-    }
-
-    const checkContact = (index : number) => {
-      let newContacts = contacts.slice();
-      newContacts[index].shown = true;
-      setContacts(newContacts);
-    }
-
-    const uncheckContact = (index : number) => {
-      let newContacts = contacts.slice();
-      newContacts[index].shown = false;
-      setContacts(newContacts);
-    }
-
-    const swapContacts = (index1 : number, index2 : number) => {
-      const bound = contacts.length;
-      if (index1 < 0 || index2 < 0 || index1 >= bound || index2 >= bound) {
-        return;
-      }
-      let newAllContacts = contacts.slice();
-      let temp = newAllContacts[index1];
-      newAllContacts[index1] = newAllContacts[index2];
-      newAllContacts[index2] = temp;
-      setContacts(newAllContacts);
-    }
-
-    return (
-      <div className="fixed -left-5 top-12 pl-8 pr-6 py-4 bg-stone-300
-      rounded-2xl shadow-lg">
-        <h3 className="text-lg font-semibold font-grotesk uppercase
-        tracking-ultra">
-          Contact
-        </h3>
-        { contacts.map((contact, index) => {
-          return <div className="my-1 flex gap-x-2 items-center justify-between">
-            <div className="flex gap-x-2">
-              { contact.shown ? 
-                <button onClick={ () => uncheckContact(index) }>
-                  <SquareCheckBig size={16}/>
-                </button>
-              :
-                <button onClick={ () => checkContact(index) }>
-                  <Square size={16}/>
-                </button>
-              }
-              <span className={"inline-block min-w-20 " + 
-              (contact.shown ? '' : 'text-stone-500')}>
-                {capitalize(contact.name)}
-              </span>
-            </div>
-            <div className="flex gap-x-2">
-              <button onClick={() => swapContacts(index, index - 1)}>
-                <ChevronUp size={16}/>
-              </button>
-              <button onClick={() => swapContacts(index, index + 1)}>
-                <ChevronDown size={16}/>
-              </button>
-              <button onClick={() => deleteContact(contact)}>
-                <X size={16} className="text-red-600"/>
-              </button>
-            </div>
-          </div>
-        })}
-        <button className="flex items-center gap-x-1" onClick={addContact}>
-          <Plus size={16} className="text-stone-500"/>
-          <span className="text-stone-500">Add Contact Field</span>
-        </button>
-      </div>
-    )
+    return <LeftColBuilder
+      allItems={contacts}
+      updateItems={setContacts}
+      onAddContact={ () => { setEnteringNewContact(true) }}
+    />
   }
 
   const generateRightColumnBuilder = () => {
