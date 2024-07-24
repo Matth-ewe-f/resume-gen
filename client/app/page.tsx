@@ -1,5 +1,5 @@
 "use client";
-import { ChevronDown, ChevronUp, LinkedinIcon, Mail, MousePointer, Music, Phone, Plus, Square, SquareCheckBig, X } from "lucide-react";
+import { LinkedinIcon, Mail, MousePointer, Music, Phone, Plus, Square, SquareCheckBig, X } from "lucide-react";
 import { FC, useEffect, useState } from "react";
 import axios from "axios";
 import ContactInput from "@/components/ContactInput";
@@ -397,6 +397,14 @@ const Page : FC = () => {
     );
   }
 
+  const generatePopupsJSX = () => {
+    if (focusedRightItem >= 0) {
+      return generateFocusedRightItem(focusedRightItem);
+    } else if (enteringNewContact) {
+      return generateNewContactInput();
+    }
+  }
+
   if (errorText) {
     return <div className="w-full mt-16 flex justify-center">
       <h3 className="font-grotesk text-2xl tracking-ultra">
@@ -455,8 +463,7 @@ const Page : FC = () => {
     </div>
     { generateLeftColumnBuilder() }
     { generateRightColumnBuilder() }
-    { focusedRightItem >= 0 ? generateFocusedRightItem(focusedRightItem) : "" }
-    { enteringNewContact ? generateNewContactInput() : '' }
+    { generatePopupsJSX() }
   </>;
 }
 
