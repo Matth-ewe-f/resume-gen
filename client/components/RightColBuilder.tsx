@@ -111,7 +111,7 @@ const RightColBuilder : FC<props> = (props) => {
             <button onClick={() => uncheckRightColumnItem(indexInVisible)}>
               <SquareCheckBig size={16}/>
             </button>
-            <h5 className="max-w-48 line-clamp-1 text-ellipsis">
+            <h5 className="max-w-48 truncate">
               { (item as experience).subtitle }
             </h5>
           </div>
@@ -137,7 +137,7 @@ const RightColBuilder : FC<props> = (props) => {
           <button onClick={() => checkRightColumnItem(index)}>
             <Square size={16}/>
           </button>
-          <h5 className="max-w-48 line-clamp-1 text-ellipsis">
+          <h5 className="max-w-48 truncate">
             {item.subtitle}
           </h5>
         </div>
