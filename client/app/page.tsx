@@ -74,8 +74,8 @@ const Page : FC = () => {
 
   const generateLeftColumnBuilder = () => {
     return <LeftColBuilder
-      allItems={contacts}
-      updateItems={setContacts}
+      contacts={contacts}
+      updateContacts={setContacts}
       onAddContact={ () => { setEnteringNewContact(true) }}
     />
   }
