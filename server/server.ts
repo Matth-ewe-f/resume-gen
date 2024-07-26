@@ -193,6 +193,34 @@ app.put('/skillLists/:name', (req : Request, res : Response) => {
   });
 })
 
+app.delete('/skillLists/:name', (req : Request, res : Response) => {
+  fs.readFile(dataFilename, 'utf-8', (err, data) => {
+    if (err) {
+      console.error(err);
+      res.status(500).send("Problem writing data, nothing was deleted");
+    } else {
+      let obj : { skills: any[] } = JSON.parse(data);
+      let index = obj.skills.findIndex((e : any) => e.name == req.params.name);
+      if (index >= 0) {
+        const deletedItem = obj.skills[index];
+        obj.skills = [
+          ...obj.skills.slice(0, index),
+          ...obj.skills.slice(index + 1)
+        ]
+        fs.writeFile(dataFilename, JSON.stringify(obj), err => {
+          if (err) {
+            res.status(500).send("Problem writing data, nothing was deleted");
+          } else {
+            res.status(200).json(deletedItem);
+          }
+        })
+      } else {
+        res.status(500).send("Problem writing data, nothing was deleted");
+      }
+    }
+  });
+})
+
 app.listen(port, () => {
   console.log(`[Server]: I am running at https://localhost:${port}`);
 });

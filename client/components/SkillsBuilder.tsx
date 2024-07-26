@@ -1,3 +1,4 @@
+import axios from "axios";
 import { ChevronDown, ChevronUp, Plus, Square, SquareCheckBig, X } from "lucide-react";
 import { FC, useState } from "react";
 
@@ -34,6 +35,25 @@ const SkillsBuilder : FC<props> = (props) => {
     newAllContacts[index1] = newAllContacts[index2];
     newAllContacts[index2] = temp;
     updateItems(newAllContacts);
+  }
+
+  const deleteSkillList = (skillList : skillList) => {
+    const msg = "This list of skills will be permanently deleted. Are you sure?";
+    if (window.confirm(msg)) {
+      const url = `http://localhost:3300/skillLists/${skillList.name}`;
+      axios.delete(url).then(response => {
+        const deleted = response.data;
+        let index = allItems.findIndex(cur => cur.name == deleted.name);
+        updateItems([
+          ...allItems.slice(0, index),
+          ...allItems.slice(index + 1),
+        ])
+        alert("Skills successfully deleted");
+      }).catch((err) => {
+        console.error(err);
+        alert("There was an error; no skills were deleted");
+      })
+    }
   }
 
   return (
@@ -75,7 +95,7 @@ const SkillsBuilder : FC<props> = (props) => {
                   <button onClick={ () => swapSkillLists(index, index + 1)}>
                     <ChevronDown size={16}/>
                   </button>
-                  <button>
+                  <button onClick={ () => deleteSkillList(item) }>
                     <X size={16} className="text-red-600"/>
                   </button>
                 </div>
