@@ -32,9 +32,11 @@ type skillList = {
   name: string,
   items: skillItem[],
   shown?: boolean,
+  oldVer?: skillList,
 }
 
 type skillItem = {
+  id: string,
   text: string,
   shown?: boolean,
 }

@@ -7,7 +7,6 @@ type props = {
   experience: experience,
   isNewItem: boolean,
   updateExperience: (e : experience) => void,
-  revertChanges: () => void,
   saveChanges: (e : experience) => void,
   delete: () => void,
   onClose: () => void,
@@ -55,10 +54,12 @@ const ExperiencePopup : FC<props> = (props) => {
   }
 
   const onRevert = () => {
-    props.revertChanges();
     if (isNewItem) {
       props.onClose();
+      return;
     }
+    let newExperience = structuredClone(experience.oldVer) as experience;
+    props.updateExperience(newExperience);
   }
 
   const onUpdate = (newVer : experience) => {
@@ -72,7 +73,6 @@ const ExperiencePopup : FC<props> = (props) => {
     let newExperience = structuredClone(experience);
     delete newExperience.oldVer;
     delete newExperience.shown;
-    console.log(newExperience);
     newExperience.bullets.forEach(item => delete item.shown);
     props.saveChanges(newExperience);
     if (isNewItem) {

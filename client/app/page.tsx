@@ -6,6 +6,7 @@ import ContactPopup from "@/components/ContactPopup";
 import ExperiencePopup from "@/components/ExperiencePopup";
 import RightColBuilder from "@/components/RightColBuilder";
 import LeftColBuilder from "@/components/LeftColBuilder";
+import SkillsPopup from "@/components/SkillsPopup";
 
 const Page : FC = () => {
   // state for the right column
@@ -16,6 +17,7 @@ const Page : FC = () => {
   const [contacts, setContacts] = useState<contact[]>([]);
   const [enteringNewContact, setEnteringNewContact] = useState(false);
   const [skills, setSkills] = useState<skillList[]>([]);
+  const [focusedSkill, setFocusedSkill] = useState(-1);
   // general state
   const [loading, setLoading] = useState(true);
   const [errorText, setErrorText] = useState("");
@@ -82,6 +84,46 @@ const Page : FC = () => {
     )
   }
 
+  const generateFocusedSkill = (index : number) => {
+    const updateFocused = (newItem : skillList) => {
+      setSkills([
+        ...skills.slice(0, index),
+        newItem,
+        ...skills.slice(index + 1)
+      ])
+    }
+
+    const save = (newItem : skillList) => {
+      const url = `http://localhost:3300/skillLists/${newItem.name}`;
+      axios.put(url, newItem).then(response => {
+        let newSkills = skills.slice();
+        let posted : skillList = response.data;
+        const index = newSkills.findIndex(cur => cur.name == posted.name);
+        posted.shown = newSkills[index].shown;
+        posted.items = posted.items.map(item => {
+          item.shown = newSkills[index].shown;
+          return item;
+        });
+        newSkills[index] = posted;
+        setSkills(newSkills);
+      }).catch(() => {
+        alert("There was an error, changes not written.");
+      })
+    }
+
+    return (
+      <div className="fixed top-0 p-16 w-screen h-screen flex items-center
+      justify-center bg-white bg-opacity-70">
+        <SkillsPopup 
+          skillList={ skills[focusedSkill] }
+          updateSkillList={ updateFocused }
+          saveSkillList={ save }
+          onClose={ () => setFocusedSkill(-1) }
+        />
+      </div>
+    )
+  }
+
   const generateLeftColumnBuilder = () => {
     return <LeftColBuilder
       contacts={contacts}
@@ -105,7 +147,7 @@ const Page : FC = () => {
     />
   }
 
-  const generateFocusedRightItem = (index : number) => {
+  const generateFocusedExperience = (index : number) => {
     if (rightColumn.length <= index || rightColumn[index].isHeading) {
       return <></>;
     }
@@ -118,19 +160,6 @@ const Page : FC = () => {
         experience,
         ...rightColumn.slice(index + 1)
       ])
-    }
-
-    const revertChanges = () => {
-      if (focusedIsNew) {
-        setRightColumn([...rightColumn.slice(1)]);
-        return;
-      }
-      let newExperience = structuredClone(experience.oldVer) as experience;
-      setRightColumn([
-        ...rightColumn.slice(0, index),
-        newExperience,
-        ...rightColumn.slice(index + 1)
-      ]);
     }
 
     const saveChanges = (body : experience) => {
@@ -196,15 +225,22 @@ const Page : FC = () => {
       }
     }
 
+    const onClose = () => {
+      setFocusedRightItem(-1);
+      setFocusedIsNew(false)
+      if (focusedIsNew) {
+        setRightColumn([...rightColumn.slice(1)]);
+      }
+    }
+
     return (
       <ExperiencePopup
         experience={experience}
         isNewItem={focusedIsNew}
         updateExperience={updateFocused}
         saveChanges={saveChanges}
-        revertChanges={revertChanges}
         delete={deleteItem}
-        onClose={() => { setFocusedRightItem(-1); setFocusedIsNew(false) }}
+        onClose={onClose}
       />
     )
   }
@@ -282,7 +318,7 @@ const Page : FC = () => {
 
   const generateSkillsSection = () => {
     const createListString = (list : skillList) => {
-      let s = list.items.map(item => item.shown ? item.text : '').join(', ');
+      let s = list.items.filter(i => i.shown).map(i => i.text).join(', ');
       return s
     }
 
@@ -292,14 +328,17 @@ const Page : FC = () => {
         Skills
       </h5>
       <div className="text-mini leading-tight">
-        { skills.map(list => {
+        { skills.map((list, index) => {
           if (list.shown) {
-            return <>
-              <p className="font-bold">{list.name}</p>
-              <p className="mr-6 mb-2 text-justify">
-                { createListString(list) }
-              </p>
-            </>
+            return (
+              <button className="block w-full text-left"
+              onClick={ () => setFocusedSkill(index) }>
+                <p className="font-bold">{list.name}</p>
+                <p className="mr-6 mb-2 text-justify">
+                  { createListString(list) }
+                </p>
+              </button>
+            );
           }
         }) }
       </div>
@@ -416,9 +455,11 @@ const Page : FC = () => {
 
   const generatePopupsJSX = () => {
     if (focusedRightItem >= 0) {
-      return generateFocusedRightItem(focusedRightItem);
+      return generateFocusedExperience(focusedRightItem);
     } else if (enteringNewContact) {
       return generateNewContactInput();
+    } else if (focusedSkill >= 0) {
+      return generateFocusedSkill(focusedSkill);
     }
   }
 
