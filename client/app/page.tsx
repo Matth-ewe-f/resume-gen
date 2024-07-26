@@ -85,15 +85,18 @@ const Page : FC = () => {
   }
 
   const generateFocusedSkill = (index : number) => {
+
     const updateFocused = (newItem : skillList) => {
-      setSkills([
-        ...skills.slice(0, index),
-        newItem,
-        ...skills.slice(index + 1)
-      ])
+      if (index >= 0) {
+        setSkills([
+          ...skills.slice(0, index),
+          newItem,
+          ...skills.slice(index + 1)
+        ])
+      }
     }
 
-    const save = (newItem : skillList) => {
+    const saveChanges = (newItem : skillList) => {
       const url = `http://localhost:3300/skillLists/${newItem.name}`;
       axios.put(url, newItem).then(response => {
         let newSkills = skills.slice();
@@ -111,13 +114,34 @@ const Page : FC = () => {
       })
     }
 
+    const saveNew = (newItem : skillList) => {
+      let body = structuredClone(newItem);
+      body.items = newItem.items.map(cur => {
+        let clone = structuredClone(cur);
+        delete clone.shown;
+        return clone;
+      });
+      const url = "http://localhost:3300/skillLists/";
+      axios.post(url, body).then(response => {
+        let newSkills = skills.slice();
+        let posted : skillList = response.data;
+        posted.shown = true;
+        posted.items = posted.items.map((item, index) => {
+          item.shown = newItem.items[index].shown;
+          return item;
+        });
+        newSkills.push(posted);
+        setSkills(newSkills);
+      })
+    }
+
     return (
       <div className="fixed top-0 p-16 w-screen h-screen flex items-center
       justify-center bg-white bg-opacity-70">
         <SkillsPopup 
-          skillList={ skills[focusedSkill] }
+          skillList={ index == -2 ? undefined : skills[focusedSkill] }
           updateSkillList={ updateFocused }
-          saveSkillList={ save }
+          saveSkillList={ index == -2 ? saveNew : saveChanges }
           onClose={ () => setFocusedSkill(-1) }
         />
       </div>
@@ -131,6 +155,7 @@ const Page : FC = () => {
       onAddContact={ () => { setEnteringNewContact(true) } }
       skills={skills}
       updateSkills={setSkills}
+      onAddSkill={ () => { setFocusedSkill(-2) }}
     />
   }
 
@@ -458,7 +483,7 @@ const Page : FC = () => {
       return generateFocusedExperience(focusedRightItem);
     } else if (enteringNewContact) {
       return generateNewContactInput();
-    } else if (focusedSkill >= 0) {
+    } else if (focusedSkill >= 0 || focusedSkill == -2) {
       return generateFocusedSkill(focusedSkill);
     }
   }

@@ -4,6 +4,7 @@ import { FC, useState } from "react";
 type props = {
   allItems : skillList[],
   updateItems : (skills : skillList[]) => void,
+  onAddItem : () => void,
 }
 
 const SkillsBuilder : FC<props> = (props) => {
@@ -81,7 +82,8 @@ const SkillsBuilder : FC<props> = (props) => {
               </div>
             )
           })}
-          <button className="flex items-center gap-x-1">
+          <button className="flex items-center gap-x-1"
+          onClick={props.onAddItem}>
             <Plus size={16} className="text-stone-500 mr-1"/>
             <span className="text-stone-500">Add Skill Heading</span>
           </button>

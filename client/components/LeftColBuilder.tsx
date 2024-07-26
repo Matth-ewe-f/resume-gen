@@ -8,6 +8,7 @@ type props = {
   onAddContact : () => void,
   skills : skillList[],
   updateSkills : (items : skillList[]) => void,
+  onAddSkill : () => void,
 }
 
 const LeftColBuilder : FC<props> = (props) => {
@@ -20,6 +21,7 @@ const LeftColBuilder : FC<props> = (props) => {
     <SkillsBuilder
       allItems={props.skills}
       updateItems={props.updateSkills}
+      onAddItem={props.onAddSkill}
     />
   </div>
 }

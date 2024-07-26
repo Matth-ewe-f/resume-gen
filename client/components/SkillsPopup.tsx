@@ -1,16 +1,31 @@
+"use client"
 import { BoxSelect, ChevronDown, ChevronUp, Plus, Square, SquareCheckBig, X } from "lucide-react";
-import { FC } from "react";
+import { FC, useState } from "react";
 const uuid = require("uuid");
 
 type props = {
-  skillList : skillList,
+  // undefined indicates the skill list is new
+  skillList : skillList | undefined,
   updateSkillList : (newSkillList : skillList) => void,
   saveSkillList: (newSkillList : skillList) => void,
   onClose: () => void,
 }
 
 const SkillsPopup : FC<props> = (props) => {
-  const skillList = props.skillList;
+  const [skillList, onUpdate] = (props.skillList == undefined
+    ?
+      useState<skillList>({ name: "New Skill List", items: [], shown: true})
+    : [
+      props.skillList,
+      (newVer : skillList) => {
+        if (!skillList.oldVer) {
+          newVer.oldVer = structuredClone(skillList);
+        }
+        props.updateSkillList(newVer);
+      }
+    ]
+  );
+  const isNewSkill = props.skillList == undefined;
 
   const isItemChanged = (index : number) => {
     if (skillList.oldVer) {
@@ -46,17 +61,14 @@ const SkillsPopup : FC<props> = (props) => {
     return false;
   }
 
-  const onUpdate = (newVer : skillList) => {
-    if (!skillList.oldVer) {
-      newVer.oldVer = structuredClone(skillList);
-    }
-    props.updateSkillList(newVer);
-  }
-
   const onRevert = () => {
-    let newVer = structuredClone(skillList.oldVer);
-    if (newVer) {
-      onUpdate(newVer);
+    if (isNewSkill) {
+      props.onClose();
+    } else {
+      let newVer = structuredClone(skillList.oldVer);
+      if (newVer) {
+        onUpdate(newVer);
+      }
     }
   }
 
@@ -64,8 +76,10 @@ const SkillsPopup : FC<props> = (props) => {
     let newItem = structuredClone(skillList);
     delete newItem.oldVer;
     delete newItem.shown;
-    newItem.items = newItem.items.map(c => { delete c.shown; return c; });
     props.saveSkillList(newItem);
+    if (isNewSkill) {
+      props.onClose();
+    }
   }
 
   const addItem = () => {
@@ -87,6 +101,14 @@ const SkillsPopup : FC<props> = (props) => {
     let newVer = structuredClone(skillList);
     newVer.items.push(item);
     onUpdate(newVer);
+  }
+
+  const editTitle = (value : string) => {
+    if (isNewSkill) {
+      let newVer = structuredClone(skillList);
+      newVer.name = value;
+      onUpdate(newVer);
+    }
   }
 
   const checkItem = (index : number) => {
@@ -131,7 +153,15 @@ const SkillsPopup : FC<props> = (props) => {
       </div>
       <hr className="mb-2 border-t border-stone-700"/>
       <div className="flex flex-col px-1 my-0.5">
-        <h5 className="text-lg font-semibold">{skillList.name}</h5>
+        { isNewSkill ?
+          <input
+            className="text-lg font-semibold bg-transparent"
+            value={skillList.name}
+            onChange={ event => editTitle(event.target.value) }
+          />
+        :
+          <h5 className="text-lg font-semibold">{skillList.name}</h5>
+        } 
         { skillList.items.map((item, index) => {
           return (
             <div className="flex-grow my-0.5 flex items-center gap-x-1
@@ -193,21 +223,21 @@ const SkillsPopup : FC<props> = (props) => {
       </div>
       <hr className="my-2 border-t border-stone-700"/>
       <div className="mt-2 flex justify-center">
-        { isAnythingChanged () ?
+        { (isAnythingChanged() || isNewSkill) ?
           <>
             <button 
               className="px-3 py-1.5 mr-4 rounded-md text-stone-200
             bg-stone-800 hover:bg-stone-600 disabled:bg-stone-600"
               onClick={ onSave }
             >
-              Save Changes
+              { isNewSkill ? "Save New Skills" : "Save Changes" }
             </button>
             <button 
               className="px-3 py-1.5 rounded-md text-stone-200
             bg-stone-800 hover:bg-stone-600 disabled:bg-stone-600"
               onClick={ onRevert }
             >
-              Revert Changes
+              { isNewSkill ? "Cancel" : "Revert Changes" }
             </button>
           </>
         :
