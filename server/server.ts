@@ -147,6 +147,52 @@ app.delete('/contacts/:name', (req: Request, res: Response) => {
   });
 })
 
+app.post('/skillLists', (req : Request, res : Response) => {
+  const newSkillList = req.body;
+  fs.readFile(dataFilename, 'utf-8', (err, data) => {
+    if (err) {
+      console.error(err);
+      res.status(500).send("Problem writing data, no changes made");
+    } else {
+      let obj : { skills : any[] } = JSON.parse(data);
+      if (obj.skills.some(cur => cur.name == newSkillList.name)) {
+        res.status(400).send(`Skill list ${newSkillList.name} already exists`);
+        return;
+      }
+      obj.skills.push(newSkillList);
+      fs.writeFile(dataFilename, JSON.stringify(obj), err => {
+        if (err) {
+          res.status(500).send("Problem writing data, no changes made");
+        } else {
+          res.status(200).json(newSkillList);
+        }
+      })
+    }
+  });
+})
+
+app.put('/skillLists/:name', (req : Request, res : Response) => {
+  const newSkillList = req.body;
+  fs.readFile(dataFilename, 'utf-8', (err, data) => {
+    if (err) {
+      console.error(err);
+      res.status(500).send("Problem writing data, no changes made");
+    } else {
+      let obj : { skills : any[] } = JSON.parse(data);
+      const index = obj.skills.findIndex(cur => cur.name == req.params.name);
+      console.log(index);
+      obj.skills[index] = newSkillList;
+      fs.writeFile(dataFilename, JSON.stringify(obj), err => {
+        if (err) {
+          res.status(500).send("Problem writing data, no changes made");
+        } else {
+          res.status(200).json(newSkillList);
+        }
+      })
+    }
+  });
+})
+
 app.listen(port, () => {
   console.log(`[Server]: I am running at https://localhost:${port}`);
 });
