@@ -1,4 +1,5 @@
 const fs = require('fs');
+const uuid = require('uuid');
 
 const filename = 'data/data.json'
 
@@ -8,9 +9,8 @@ fs.readFile(filename, 'utf-8', (err, data) => {
   } else {
     let obj = JSON.parse(data);
     obj.skills.map(list => {
-      console.log(list.items);
       list.items = list.items.map(item => {
-        return { text: item }
+        return { id : uuid.v4(), ...item }
       })
       return list;
     })
