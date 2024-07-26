@@ -1,6 +1,5 @@
 import { FC } from "react";
-import ContactsBuilder from "./ContactsBuilder";
-import SkillsBuilder from "./SkillsBuilder";
+import LeftSectionBuilder from "./LeftSectionBuilder";
 
 type props = {
   contacts : contact[],
@@ -13,15 +12,23 @@ type props = {
 
 const LeftColBuilder : FC<props> = (props) => {
   return <div className="fixed -left-5 top-12 flex flex-col gap-y-6 w-72">
-    <ContactsBuilder
+    <LeftSectionBuilder
       allItems={props.contacts}
       updateItems={props.updateContacts}
-      onAddContact={props.onAddContact}
+      onAddItem={props.onAddContact}
+      heading="Contact"
+      addText="New Contact Info"
+      deleteText="Contact"
+      deleteRoute="contacts"
     />
-    <SkillsBuilder
+    <LeftSectionBuilder
       allItems={props.skills}
       updateItems={props.updateSkills}
       onAddItem={props.onAddSkill}
+      heading="Skills"
+      addText="New Skill List"
+      deleteText="Skill List"
+      deleteRoute="skillLists"
     />
   </div>
 }

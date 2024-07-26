@@ -1,14 +1,18 @@
 import axios from "axios";
 import { ChevronDown, ChevronUp, SquareCheckBig, Square, X, Plus } from "lucide-react";
-import { FC, useState } from "react";
+import { useState } from "react";
 
-type props = {
-  allItems : contact[],
-  updateItems : (items : contact[]) => void,
-  onAddContact : () => void,
+type props<T extends leftColumnItem> = {
+  allItems : T[],
+  updateItems : (items : T[]) => void,
+  onAddItem : () => void,
+  heading: string,
+  addText: string,
+  deleteText: string,
+  deleteRoute: string,
 }
 
-const ContactsBuilder : FC<props> = (props) => {
+const LeftSectionBuilder = <T extends leftColumnItem,>(props : props<T>) => {
   const allItems = props.allItems;
   const updateItems = props.updateItems;
   const [open, setOpen] = useState(false);
@@ -19,14 +23,14 @@ const ContactsBuilder : FC<props> = (props) => {
     ).join(' ');
   }
 
-  const addContact = () => {
-    props.onAddContact();
+  const addItem = () => {
+    props.onAddItem();
   }
 
-  const deleteContact = (contact : contact) => {
-    const msg = "This line of contact info will be permanently deleted. Are you sure?";
+  const deleteItem = (item : T) => {
+    const msg = `This ${props.deleteText} info will be permanently deleted. Are you sure?`;
     if (window.confirm(msg)) {
-      const url = `http://localhost:3300/contacts/${contact.name}`;
+      const url = `http://localhost:3300/${props.deleteRoute}/${item.name}`;
       axios.delete(url).then(response => {
         const deleted = response.data;
         let index = allItems.findIndex(cur => cur.name == deleted.name);
@@ -34,36 +38,36 @@ const ContactsBuilder : FC<props> = (props) => {
           ...allItems.slice(0, index),
           ...allItems.slice(index + 1),
         ])
-        alert("Contact info successfully deleted");
+        alert(`${props.deleteText} successfully deleted`);
       }).catch((err) => {
         console.error(err);
-        alert("There was an error; no contact info was deleted");
+        alert("There was an error; nothing was deleted");
       })
     }
   }
 
-  const checkContact = (index : number) => {
-    let newContacts = allItems.slice();
-    newContacts[index].shown = true;
-    updateItems(newContacts);
+  const checkItem = (index : number) => {
+    let newItems = allItems.slice();
+    newItems[index].shown = true;
+    updateItems(newItems);
   }
 
-  const uncheckContact = (index : number) => {
-    let newContacts = allItems.slice();
-    newContacts[index].shown = false;
-    updateItems(newContacts);
+  const uncheckItem = (index : number) => {
+    let newItems = allItems.slice();
+    newItems[index].shown = false;
+    updateItems(newItems);
   }
 
-  const swapContacts = (index1 : number, index2 : number) => {
+  const swapItems = (index1 : number, index2 : number) => {
     const bound = allItems.length;
     if (index1 < 0 || index2 < 0 || index1 >= bound || index2 >= bound) {
       return;
     }
-    let newAllContacts = allItems.slice();
-    let temp = newAllContacts[index1];
-    newAllContacts[index1] = newAllContacts[index2];
-    newAllContacts[index2] = temp;
-    updateItems(newAllContacts);
+    let newItems = allItems.slice();
+    let temp = newItems[index1];
+    newItems[index1] = newItems[index2];
+    newItems[index2] = temp;
+    updateItems(newItems);
   }
 
   return (
@@ -72,7 +76,7 @@ const ContactsBuilder : FC<props> = (props) => {
       <div className="flex justify-between">
         <h3 className="text-lg font-semibold font-grotesk uppercase
         tracking-ultra">
-          Contact
+          { props.heading }
         </h3>
         <button onClick={ () => setOpen(a => !a)}>
           { open ? <ChevronDown size={24}/> : <ChevronUp size={24}/> }
@@ -80,41 +84,41 @@ const ContactsBuilder : FC<props> = (props) => {
       </div>
       { open ? 
         <>
-          { allItems.map((contact, index) => {
+          { allItems.map((item, index) => {
             return (
               <div className="my-1 flex gap-x-2 items-center justify-between">
                 <div className="flex gap-x-2">
-                  { contact.shown ? 
-                    <button onClick={ () => uncheckContact(index) }>
+                  { item.shown ? 
+                    <button onClick={ () => uncheckItem(index) }>
                       <SquareCheckBig size={16}/>
                     </button>
                   :
-                    <button onClick={ () => checkContact(index) }>
+                    <button onClick={ () => checkItem(index) }>
                       <Square size={16}/>
                     </button>
                   }
-                  <span className={"inline-block min-w-20 " + 
-                  (contact.shown ? '' : 'text-stone-500')}>
-                    {capitalize(contact.name)}
+                  <span className={"min-w-20 max-w-32 truncate " + 
+                  (item.shown ? '' : 'text-stone-500')}>
+                    {capitalize(item.name)}
                   </span>
                 </div>
                 <div className="flex gap-x-2">
-                  <button onClick={() => swapContacts(index, index - 1)}>
+                  <button onClick={() => swapItems(index, index - 1)}>
                     <ChevronUp size={16}/>
                   </button>
-                  <button onClick={() => swapContacts(index, index + 1)}>
+                  <button onClick={() => swapItems(index, index + 1)}>
                     <ChevronDown size={16}/>
                   </button>
-                  <button onClick={() => deleteContact(contact)}>
+                  <button onClick={() => deleteItem(item)}>
                     <X size={16} className="text-red-600"/>
                   </button>
                 </div>
               </div>
             )
           })}
-          <button className="flex items-center gap-x-1" onClick={addContact}>
+          <button className="flex items-center gap-x-1" onClick={addItem}>
             <Plus size={16} className="text-stone-500 mr-1"/>
-            <span className="text-stone-500">Add Contact Field</span>
+            <span className="text-stone-500">{props.addText}</span>
           </button>
         </>
       :
@@ -124,4 +128,4 @@ const ContactsBuilder : FC<props> = (props) => {
   )
 }
 
-export default ContactsBuilder;
+export default LeftSectionBuilder;
