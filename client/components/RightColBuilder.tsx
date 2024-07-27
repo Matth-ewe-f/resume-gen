@@ -200,16 +200,18 @@ const RightColBuilder : FC<props> = (props) => {
       onClick={addExperience}>
         <Plus size={16} className="mr-1"/>Create New Item
       </button>
-      <h3 className="my-2 text-lg font-grotesk font-semibold uppercase
+      <h3 className="mt-2 text-lg font-grotesk font-semibold uppercase
       tracking-ultra">
         Hidden
       </h3>
-      { allItems.map((element, index) => {
-        if (!element.shown && !element.isHeading) {
-          let exp = element as experience;
-          return generateUncheckedRightBuilderItem(exp, index);
-        }
-      })}
+      <div className="max-h-60 overflow-y-scroll">
+        { allItems.map((element, index) => {
+          if (!element.shown && !element.isHeading) {
+            let exp = element as experience;
+            return generateUncheckedRightBuilderItem(exp, index);
+          }
+        })}
+      </div>
     </div>
   )
 }

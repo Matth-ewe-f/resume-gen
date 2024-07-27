@@ -84,38 +84,40 @@ const LeftSectionBuilder = <T extends leftColumnItem,>(props : props<T>) => {
       </div>
       { open ? 
         <>
-          { allItems.map((item, index) => {
-            return (
-              <div className="my-1 flex gap-x-2 items-center justify-between">
-                <div className="flex gap-x-2">
-                  { item.shown ? 
-                    <button onClick={ () => uncheckItem(index) }>
-                      <SquareCheckBig size={16}/>
+          <div className="max-h-48 overflow-y-scroll">
+            { allItems.map((item, index) => {
+              return (
+                <div className="my-1 flex gap-x-2 items-center justify-between">
+                  <div className="flex gap-x-2">
+                    { item.shown ? 
+                      <button onClick={ () => uncheckItem(index) }>
+                        <SquareCheckBig size={16}/>
+                      </button>
+                    :
+                      <button onClick={ () => checkItem(index) }>
+                        <Square size={16}/>
+                      </button>
+                    }
+                    <span className={"min-w-20 max-w-32 truncate " + 
+                    (item.shown ? '' : 'text-stone-500')}>
+                      {capitalize(item.name)}
+                    </span>
+                  </div>
+                  <div className="flex gap-x-2">
+                    <button onClick={() => swapItems(index, index - 1)}>
+                      <ChevronUp size={16}/>
                     </button>
-                  :
-                    <button onClick={ () => checkItem(index) }>
-                      <Square size={16}/>
+                    <button onClick={() => swapItems(index, index + 1)}>
+                      <ChevronDown size={16}/>
                     </button>
-                  }
-                  <span className={"min-w-20 max-w-32 truncate " + 
-                  (item.shown ? '' : 'text-stone-500')}>
-                    {capitalize(item.name)}
-                  </span>
+                    <button onClick={() => deleteItem(item)}>
+                      <X size={16} className="text-red-600"/>
+                    </button>
+                  </div>
                 </div>
-                <div className="flex gap-x-2">
-                  <button onClick={() => swapItems(index, index - 1)}>
-                    <ChevronUp size={16}/>
-                  </button>
-                  <button onClick={() => swapItems(index, index + 1)}>
-                    <ChevronDown size={16}/>
-                  </button>
-                  <button onClick={() => deleteItem(item)}>
-                    <X size={16} className="text-red-600"/>
-                  </button>
-                </div>
-              </div>
-            )
-          })}
+              )
+            })}
+          </div>
           <button className="flex items-center gap-x-1" onClick={addItem}>
             <Plus size={16} className="text-stone-500 mr-1"/>
             <span className="text-stone-500">{props.addText}</span>
