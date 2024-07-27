@@ -18,7 +18,8 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`${roboto.variable} ${grotesk.variable}`}>
-      <body className="font-roboto text-stone-700">
+      <body className="font-roboto text-stone-700
+      [&_*]:placeholder-stone-400">
         {children}
       </body>
     </html>

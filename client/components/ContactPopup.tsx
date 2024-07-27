@@ -25,7 +25,7 @@ const ContactPopup : FC<props> = ({onSubmit, onClose}) => {
   }
 
   return (
-    <div className="w-[640px] px-6 py-4 bg-stone-300 rounded-2xl shadow-lg">
+    <div className="w-[480px] px-6 py-4 bg-stone-300 rounded-2xl shadow-lg">
       <div className="flex flex-row items-center justify-between">
         <h3 className="text-xl font-grotesk uppercase tracking-ultra">
           New Contact Field
