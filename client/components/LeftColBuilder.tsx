@@ -10,6 +10,7 @@ type props = {
   onAddSkill : () => void,
   references : reference[],
   updateReferences : (items : reference[]) => void,
+  onAddReference : () => void,
 }
 
 const LeftColBuilder : FC<props> = (props) => {
@@ -35,7 +36,7 @@ const LeftColBuilder : FC<props> = (props) => {
     <LeftSectionBuilder
       allItems={props.references}
       updateItems={props.updateReferences}
-      onAddItem={ () => 1 }
+      onAddItem={props.onAddReference}
       heading="References"
       addText="New Reference"
       deleteText="Reference"

@@ -7,6 +7,7 @@ import ExperiencePopup from "@/components/ExperiencePopup";
 import RightColBuilder from "@/components/RightColBuilder";
 import LeftColBuilder from "@/components/LeftColBuilder";
 import SkillsPopup from "@/components/SkillsPopup";
+import ReferencePopup from "@/components/ReferencePopup";
 
 const Page : FC = () => {
   // state for the right column
@@ -19,6 +20,7 @@ const Page : FC = () => {
   const [skills, setSkills] = useState<skillList[]>([]);
   const [focusedSkill, setFocusedSkill] = useState(-1);
   const [refrences, setReferences] = useState<reference[]>([]);
+  const [enteringNewReference, setEnteringNewReference] = useState(false);
   // general state
   const [loading, setLoading] = useState(true);
   const [errorText, setErrorText] = useState("");
@@ -110,6 +112,33 @@ const Page : FC = () => {
     )
   }
 
+  const generateNewReferenceInput = () => {
+    const onSubmit = (newReference : reference) => {
+      delete newReference.shown;
+      const url = 'http://localhost:3300/references/';
+      axios.post(url, newReference).then(response => {
+        let newReferences = refrences.slice();
+        newReferences.push({...response.data, shown: true });
+        setReferences(newReferences);
+        alert("New reference created");
+      }).catch(err => {
+        alert("Something went wrong; no new reference was created");
+        console.error(err);
+      })
+      setEnteringNewReference(false);
+    }
+
+    return (
+      <div className="fixed top-0 p-16 w-screen h-screen flex items-center
+      justify-center bg-white bg-opacity-70">
+        <ReferencePopup
+          onClose={ () => setEnteringNewReference(false) }
+          onSubmit={onSubmit}
+        />
+      </div>
+    )
+  }
+
   const generateFocusedSkill = (index : number) => {
 
     const updateFocused = (newItem : skillList) => {
@@ -184,6 +213,7 @@ const Page : FC = () => {
       onAddSkill={ () => { setFocusedSkill(-2) }}
       references={refrences}
       updateReferences={setReferences}
+      onAddReference={ () => { setEnteringNewReference(true) } }
     />
   }
 
@@ -535,6 +565,8 @@ const Page : FC = () => {
       return generateNewContactInput();
     } else if (focusedSkill >= 0 || focusedSkill == -2) {
       return generateFocusedSkill(focusedSkill);
+    } else if (enteringNewReference) {
+      return generateNewReferenceInput();
     }
   }
 
