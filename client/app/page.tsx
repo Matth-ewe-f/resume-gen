@@ -1,6 +1,6 @@
 "use client";
 import { LinkedinIcon, Mail, MousePointer, Music, Phone, Square } from "lucide-react";
-import { FC, useEffect, useState } from "react";
+import { FC, useEffect, useRef, useState } from "react";
 import axios from "axios";
 import ContactPopup from "@/components/ContactPopup";
 import ExperiencePopup from "@/components/ExperiencePopup";
@@ -25,6 +25,8 @@ const Page : FC = () => {
   const [refrences, setReferences] = useState<reference[]>([]);
   const [enteringNewReference, setEnteringNewReference] = useState(false);
   // general state
+  const [widgets, setWidgets] = useState(true);
+  const widgetsRef = useRef(widgets);
   const [loading, setLoading] = useState(true);
   const [errorText, setErrorText] = useState("");
 
@@ -65,6 +67,18 @@ const Page : FC = () => {
       console.error(err);
       setErrorText("An Error Occured");
     });
+
+    const handleKeyPress = (event : KeyboardEvent) => {
+      if (!widgetsRef.current) {
+        console.log("!!");
+        setWidgets(true);
+        widgetsRef.current = true;
+      }
+    }
+
+    window.addEventListener("keydown", handleKeyPress);
+
+    return () => window.removeEventListener("keydown", handleKeyPress);
   }, []);
 
   const getIconForContact = (type : string) => {
@@ -86,6 +100,25 @@ const Page : FC = () => {
     } else {
       return <Square className={className} size={16} strokeWidth={1}/>;
     }
+  }
+
+  const generateWidgetToggle = () => {
+    const onClick = () => {
+      alert("Widgets will be hidden so that the page can be downloaded as a PDF. Press the space bar to show them again.");
+      setWidgets(false);
+      widgetsRef.current = false;
+    }
+
+    return (
+      <div className="fixed -left-5 top-12 w-72 pl-8 py-4 bg-stone-300
+      rounded-2xl shadow-lg">
+        <button className="text-lg font-grotesk font-semibold uppercase
+        tracking-ultra underline hover:text-stone-500"
+        onClick={onClick}>
+          Hide Widgets
+        </button>
+      </div>
+    );
   }
 
   const generateNewContactInput = () => {
@@ -617,9 +650,16 @@ const Page : FC = () => {
         <div className="bg-stone-700 h-[1px] w-auto mx-24"/>
       </div>
     </div>
-    { generateLeftColumnBuilder() }
-    { generateRightColumnBuilder() }
-    { generatePopupsJSX() }
+    { widgets ?
+      <>
+        { generateWidgetToggle() }
+        { generateLeftColumnBuilder() }
+        { generateRightColumnBuilder() }
+        { generatePopupsJSX() }
+      </>
+    :
+      ''
+    }
   </>;
 }
 

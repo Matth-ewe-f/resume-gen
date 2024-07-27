@@ -14,7 +14,7 @@ type props = {
 }
 
 const LeftColBuilder : FC<props> = (props) => {
-  return <div className="fixed -left-5 top-12 flex flex-col gap-y-6 w-72">
+  return <div className="fixed -left-5 top-32 flex flex-col gap-y-6 w-72">
     <LeftSectionBuilder
       allItems={props.contacts}
       updateItems={props.updateContacts}
