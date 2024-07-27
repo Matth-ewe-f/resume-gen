@@ -469,20 +469,22 @@ const Page : FC = () => {
       tracking-ultra">
         References
       </h5>
-      { refrences.map(reference => {
-        if (reference.shown) {
-          return (
-            <div className="my-4 text-mini leading-tight">
-              <div className="mr-4 bg-stone-200 min-h-4 pt-3 px-4 pb-2">
-                <p className="font-bold">{reference.name}</p>
-                <p>{reference.subtitle}</p>
-                { getContactLine(reference.contact1) }
-                { getContactLine(reference.contact2) }
+      <div className="mt-2 flex flex-col gap-y-4">
+        { refrences.map(reference => {
+          if (reference.shown) {
+            return (
+              <div className="text-mini leading-tight">
+                <div className="mr-4 bg-stone-200 min-h-4 pt-3 px-4 pb-2">
+                  <p className="font-bold">{reference.name}</p>
+                  <p>{reference.subtitle}</p>
+                  { getContactLine(reference.contact1) }
+                  { getContactLine(reference.contact2) }
+                </div>
               </div>
-            </div>
-          );
-        }
-      })}
+            );
+          }
+        })}
+      </div>
     </>
   }
 
