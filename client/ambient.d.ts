@@ -45,3 +45,16 @@ type skillItem = {
   text: string,
   shown?: boolean,
 }
+
+type reference = {
+  name: string,
+  subtitle: string,
+  contact1: referenceContact,
+  contact2: referenceContact,
+  shown?: boolean,
+}
+
+type referenceContact = {
+  text: string,
+  icon: string,
+}

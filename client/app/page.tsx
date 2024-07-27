@@ -18,6 +18,7 @@ const Page : FC = () => {
   const [enteringNewContact, setEnteringNewContact] = useState(false);
   const [skills, setSkills] = useState<skillList[]>([]);
   const [focusedSkill, setFocusedSkill] = useState(-1);
+  const [refrences, setReferences] = useState<reference[]>([]);
   // general state
   const [loading, setLoading] = useState(true);
   const [errorText, setErrorText] = useState("");
@@ -49,12 +50,52 @@ const Page : FC = () => {
           return list;
         }
       ))
+      setReferences([
+        {
+          name: "Daniel Kluger",
+          subtitle: "Most Recent Employer",
+          contact1: { text: "daniel.kluger@icloud.com", icon : "email" },
+          contact2: { text: "https://www.danielkluger.com/", icon: "website" },
+          shown: true
+        },
+        {
+          name: "Phillip Klassen",
+          subtitle: "Game Audio Professor",
+          contact1: { text: "phillip.klassen@oxidegames.com", icon : "email" },
+          contact2: { 
+            text: "https://www.linkedin.com/in/phillip-klassen-ab4108105",
+            icon: "linkedin" 
+          },
+          shown: true
+        }
+      ])
       setLoading(false);
     }).catch(err => {
       console.error(err);
       setErrorText("An Error Occured");
     });
   }, []);
+
+  const getIconForContact = (type : string) => {
+    const className = "text-stone-600 shrink-0";
+    if (type == "phone") {
+      return <Phone className={className} size={16} strokeWidth={1}/>;
+    } else if (type == "email") {
+      return <Mail className={className} size={16} strokeWidth={1}/>;
+    } else if (type == "website") {
+      return (
+        <MousePointer className={className} size={16} strokeWidth={1}/>
+      );
+    } else if (type == "reel") {
+      return <Music className={className} size={16} strokeWidth={1}/>;
+    } else if (type == "linkedin") {
+      return (
+        <LinkedinIcon className={className} size={16} strokeWidth={1}/>
+      );
+    } else {
+      return <Square className={className} size={16} strokeWidth={1}/>;
+    }
+  }
 
   const generateNewContactInput = () => {
     const onClose = () => {
@@ -156,6 +197,8 @@ const Page : FC = () => {
       skills={skills}
       updateSkills={setSkills}
       onAddSkill={ () => { setFocusedSkill(-2) }}
+      references={refrences}
+      updateReferences={setReferences}
     />
   }
 
@@ -271,22 +314,6 @@ const Page : FC = () => {
   }
 
   const generateContactSection = () => {
-    const getIconForContact = (contact : contact) => {
-      if (contact.name == "phone") {
-        return <Phone className="text-stone-600" size={16} strokeWidth={1}/>;
-      } else if (contact.name == "email") {
-        return <Mail className="text-stone-600" size={16} strokeWidth={1}/>;
-      } else if (contact.name == "website") {
-        return (
-          <MousePointer className="text-stone-600" size={16} strokeWidth={1}/>
-        );
-      } else if (contact.name == "reel") {
-        return <Music className="text-stone-600" size={16} strokeWidth={1}/>;
-      } else {
-        return <Square className="text-stone-600" size={16} strokeWidth={1}/>;
-      }
-    }
-
     const getTextForContact = (contact : contact) => {
       if (contact.link) {
         return (
@@ -314,7 +341,7 @@ const Page : FC = () => {
           return (
             <div className="my-2 flex flex-row items-center flex-nowrap gap-x-2"
             key={`contact-${contact.name}`}>
-              { getIconForContact(contact) }
+              { getIconForContact(contact.name) }
               { getTextForContact(contact) }
             </div>
           )
@@ -371,12 +398,50 @@ const Page : FC = () => {
   }
 
   const generateReferencesSection = () => {
+    const getContactLine = (contact : referenceContact) => {
+      const link = getContactLink(contact);
+      return (
+        <div className="my-2 flex flex-row items-center flex-nowrap gap-x-2">
+          { getIconForContact(contact.icon) }
+          { link ?
+            <a className="text-mini" href={link}>{ contact.text }</a>
+          :
+            <p className="text-mini">{ contact.text }</p>
+          }
+        </div>
+      );
+    }
+
+    const getContactLink = (contact : referenceContact) => {
+      if (contact.icon == "phone") {
+        return undefined;
+      } else if (contact.text.includes("@")) {
+        return `mailto:${contact.text}`;
+      } else {
+        return contact.text;
+      }
+    }
+
     return <>
-      <h5 className="pl-4 py-2 text font-grotesk font-medium uppercase
+      <h5 className="pl-4 pt-2 text font-grotesk font-medium uppercase
       tracking-ultra">
         References
       </h5>
-      <div className="text-mini leading-tight">
+      { refrences.map(reference => {
+        if (reference.shown) {
+          return (
+            <div className="my-4 text-mini leading-tight">
+              <div className="mr-4 bg-stone-200 min-h-4 pt-3 px-4 pb-2">
+                <p className="font-bold">{reference.name}</p>
+                <p>{reference.subtitle}</p>
+                { getContactLine(reference.contact1) }
+                { getContactLine(reference.contact2) }
+              </div>
+            </div>
+          );
+        }
+      })}
+      {/* <div className="text-mini leading-tight">
         <div className="mr-4 bg-stone-200 min-h-4 pt-3 px-4 pb-2">
           <p className="font-bold">Daniel Kluger</p>
           <p>Most Recent Employer</p>
@@ -414,8 +479,8 @@ const Page : FC = () => {
               https://www.linkedin.com/in/phillip-klassen-ab4108105
             </a>
           </div>
-        </div>
-      </div>
+        </div> */}
+      {/* </div> */}
     </>
   }
 

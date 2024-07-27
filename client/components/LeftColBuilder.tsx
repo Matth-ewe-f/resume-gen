@@ -8,6 +8,8 @@ type props = {
   skills : skillList[],
   updateSkills : (items : skillList[]) => void,
   onAddSkill : () => void,
+  references : reference[],
+  updateReferences : (items : reference[]) => void,
 }
 
 const LeftColBuilder : FC<props> = (props) => {
@@ -29,6 +31,15 @@ const LeftColBuilder : FC<props> = (props) => {
       addText="New Skill List"
       deleteText="Skill List"
       deleteRoute="skillLists"
+    />
+    <LeftSectionBuilder
+      allItems={props.references}
+      updateItems={props.updateReferences}
+      onAddItem={ () => 1 }
+      heading="References"
+      addText="New Reference"
+      deleteText="Reference"
+      deleteRoute="references"
     />
   </div>
 }
