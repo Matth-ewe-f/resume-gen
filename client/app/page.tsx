@@ -49,26 +49,11 @@ const Page : FC = () => {
           });
           return list;
         }
-      ))
-      setReferences([
-        {
-          name: "Daniel Kluger",
-          subtitle: "Most Recent Employer",
-          contact1: { text: "daniel.kluger@icloud.com", icon : "email" },
-          contact2: { text: "https://www.danielkluger.com/", icon: "website" },
-          shown: true
-        },
-        {
-          name: "Phillip Klassen",
-          subtitle: "Game Audio Professor",
-          contact1: { text: "phillip.klassen@oxidegames.com", icon : "email" },
-          contact2: { 
-            text: "https://www.linkedin.com/in/phillip-klassen-ab4108105",
-            icon: "linkedin" 
-          },
-          shown: true
-        }
-      ])
+      ));
+      setReferences(response.data.references.map((item : reference) => {
+        item.shown = true;
+        return item;
+      }));
       setLoading(false);
     }).catch(err => {
       console.error(err);
