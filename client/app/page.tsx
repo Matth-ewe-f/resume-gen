@@ -8,6 +8,7 @@ import RightColBuilder from "@/components/RightColBuilder";
 import LeftColBuilder from "@/components/LeftColBuilder";
 import SkillsPopup from "@/components/SkillsPopup";
 import ReferencePopup from "@/components/ReferencePopup";
+import EducationPopup from "@/components/EducationPopup";
 
 const Page : FC = () => {
   // state for the right column
@@ -17,6 +18,8 @@ const Page : FC = () => {
   // state for the left column
   const [contacts, setContacts] = useState<contact[]>([]);
   const [enteringNewContact, setEnteringNewContact] = useState(false);
+  const [educationText, setEducationText] = useState("");
+  const [editingEducation, setEditingEducation] = useState(false);
   const [skills, setSkills] = useState<skillList[]>([]);
   const [focusedSkill, setFocusedSkill] = useState(-1);
   const [refrences, setReferences] = useState<reference[]>([]);
@@ -43,6 +46,7 @@ const Page : FC = () => {
           return item;
         }
       ));
+      setEducationText("B.S. in Computer Science\nJohns Hopkins University, Baltimore MD\nMay 2024\nGPA: 3.77 (Combined B.S. and B.M.)\n \nB.M. in Music for New Media\nPeabody Institute, Baltimore MD\nMay 2024");
       setSkills(response.data.skills.map(
         (list : skillList) => {
           list.shown = true;
@@ -108,6 +112,24 @@ const Page : FC = () => {
       <div className="fixed top-0 p-16 w-screen h-screen flex items-center
       justify-center bg-white bg-opacity-70">
         <ContactPopup onClose={onClose} onSubmit={onSubmit}/>
+      </div>
+    )
+  }
+
+  const generateEducationEditor = () => {
+    const onSubmit = (text : string) => {
+      setEducationText(text);
+      setEditingEducation(false);
+    }
+
+    return (
+      <div className="fixed top-0 p-16 w-screen h-screen flex items-center
+      justify-center bg-white bg-opacity-70">
+        <EducationPopup
+          oldText={educationText}
+          onClose={() => setEditingEducation(false)}
+          onSubmit={onSubmit}
+        />
       </div>
     )
   }
@@ -371,15 +393,20 @@ const Page : FC = () => {
       tracking-ultra">
         Education
       </h5>
-      <div className="text-mini leading-tight">
-        <p className="font-bold">B.S. in Computer Science</p>
-        <p>Johns Hopkins University, Baltimore MD</p>
-        <p>May 2024</p>
-        <p>GPA: 3.77 (Combined B.S. and B.M.)</p>
-        <p className="font-bold mt-2">B.M. in Music for New Media</p>
-        <p>Peabody Institute, Baltimore MD</p>
-        <p>May 2024</p>
-      </div>
+      <button className="text-left text-mini leading-tight"
+      onClick={() => setEditingEducation(true)}>
+        { educationText.split("\n").map(line => {
+          return <p className="min-h-2">
+            {line.split("**").map((piece, index) => {
+              if (index % 2 == 0) {
+                return piece;
+              } else {
+                return <span className="font-bold">{piece}</span>
+              }
+            })}
+          </p>
+        }) }
+      </button>
     </>
   }
 
@@ -456,46 +483,6 @@ const Page : FC = () => {
           );
         }
       })}
-      {/* <div className="text-mini leading-tight">
-        <div className="mr-4 bg-stone-200 min-h-4 pt-3 px-4 pb-2">
-          <p className="font-bold">Daniel Kluger</p>
-          <p>Most Recent Employer</p>
-          <div className="my-2 flex flex-row items-center flex-nowrap gap-x-2">
-            <Mail className="text-stone-600" size={16} strokeWidth={1}/>
-            <a className="text-mini" href="mailto:daniel.kluger@icloud.com">
-              daniel.kluger@icloud.com
-            </a>
-          </div>
-          <div className="my-2 flex flex-row items-center flex-nowrap gap-x-2">
-            <MousePointer className="text-stone-600" size={16} strokeWidth={1}/>
-            <a className="text-mini underline"
-            href="https://www.danielkluger.com/">
-              https://www.danielkluger.com/
-            </a>
-          </div>
-        </div>
-      </div>
-      <div className="mt-4 text-mini leading-tight">
-        <div className="mr-4 bg-stone-200 min-h-4 pt-3 px-4 pb-2">
-          <p className="font-bold">Phillip Klassen</p>
-          <p>Game Audio Professor</p>
-          <div className="my-2 flex flex-row items-center flex-nowrap gap-x-2">
-            <Mail className="text-stone-600 shrink-0" size={16}
-            strokeWidth={1}/>
-            <a className="text-mini" href="mailto:phillip.klassen@oxidegames.com">
-              phillip.klassen@oxidegames.com
-            </a>
-          </div>
-          <div className="my-2 flex flex-row items-center flex-nowrap gap-x-2">
-            <LinkedinIcon className="text-stone-600 shrink-0" size={16}
-            strokeWidth={1}/>
-            <a className="text-mini underline break-all"
-            href="https://www.linkedin.com/in/phillip-klassen-ab4108105">
-              https://www.linkedin.com/in/phillip-klassen-ab4108105
-            </a>
-          </div>
-        </div> */}
-      {/* </div> */}
     </>
   }
 
@@ -563,6 +550,8 @@ const Page : FC = () => {
       return generateFocusedExperience(focusedRightItem);
     } else if (enteringNewContact) {
       return generateNewContactInput();
+    } else if (editingEducation) {
+      return generateEducationEditor();
     } else if (focusedSkill >= 0 || focusedSkill == -2) {
       return generateFocusedSkill(focusedSkill);
     } else if (enteringNewReference) {
