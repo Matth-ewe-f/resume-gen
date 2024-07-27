@@ -50,6 +50,15 @@ const RightColBuilder : FC<props> = (props) => {
     updateItems(newColumn);
   }
 
+  const removeRightColumnItem = (index : number) => {
+    let newColumn = allItems.slice();
+    newColumn = [
+      ...newColumn.slice(0, index),
+      ...newColumn.slice(index + 1)
+    ];
+    updateItems(newColumn);
+  }
+
   const switchRightColumnItems =
   (index1 : number, index2 : number) => {
     const bound = allItems.length;
@@ -84,7 +93,7 @@ const RightColBuilder : FC<props> = (props) => {
       return (
         <div className="pt-1 flex items-center justify-between">
           <div className="flex items-center gap-x-2">
-            <button onClick={() => uncheckRightColumnItem(indexInVisible)}>
+            <button onClick={() => removeRightColumnItem(indexInVisible)}>
               <X size={16}/>
             </button>
             <input 
