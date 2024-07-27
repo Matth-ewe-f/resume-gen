@@ -51,7 +51,7 @@ const Page : FC = () => {
           return item;
         }
       ));
-      setEducationText("B.S. in Computer Science\nJohns Hopkins University, Baltimore MD\nMay 2024\nGPA: 3.77 (Combined B.S. and B.M.)\n \nB.M. in Music for New Media\nPeabody Institute, Baltimore MD\nMay 2024");
+      setEducationText("**B.S. in Computer Science\nJohns Hopkins University, Baltimore MD\nMay 2024\nGPA: 3.77 (Combined B.S. and B.M.)\n \n**B.M. in Music for New Media\nPeabody Institute, Baltimore MD\nMay 2024");
       setSkills(response.data.skills.map(
         (list : skillList) => {
           list.shown = true;
