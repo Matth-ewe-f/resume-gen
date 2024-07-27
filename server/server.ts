@@ -19,10 +19,43 @@ app.get('/allData', (req: Request, res: Response) => {
       res.status(500).send("Problem reading data files");
     } else {
       let obj = JSON.parse(data);
+      delete obj.resumes;
       res.status(200).json(obj);
     }
   })
 });
+
+app.get('/resumes', (req: Request, res: Response) => {
+  fs.readFile(dataFilename, 'utf-8', (err, data) => {
+  if (err) {
+    console.error(err);
+    res.status(500).send("Problem reading data files");
+  } else {
+    let obj = JSON.parse(data);
+    res.status(200).json({ resumes: obj.resumes });
+  }
+})
+})
+
+app.post('/resumes', (req: Request, res: Response) => {
+  const newResume = req.body;
+  fs.readFile(dataFilename, 'utf-8', (err, data) => {
+    if (err) {
+      console.error(err);
+      res.status(500).send("Problem writing data, no changes made");
+    } else {
+      let obj : { resumes: any[] } = JSON.parse(data);
+      obj.resumes.push(newResume);
+      fs.writeFile(dataFilename, JSON.stringify(obj), err => {
+        if (err) {
+          res.status(500).send("Problem writing data, no changes made");
+        } else {
+          res.status(200).json(newResume);
+        }
+      })
+    }
+  });
+})
 
 app.post('/experiences', (req: Request, res: Response) => {
   const newExperience = req.body;

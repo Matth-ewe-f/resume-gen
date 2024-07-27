@@ -9,6 +9,8 @@ import LeftColBuilder from "@/components/LeftColBuilder";
 import SkillsPopup from "@/components/SkillsPopup";
 import ReferencePopup from "@/components/ReferencePopup";
 import EducationPopup from "@/components/EducationPopup";
+import SavePopup from "@/components/SavePopup";
+const uuid = require("uuid");
 
 const Page : FC = () => {
   // state for the right column
@@ -27,6 +29,7 @@ const Page : FC = () => {
   // general state
   const [widgets, setWidgets] = useState(true);
   const widgetsRef = useRef(widgets);
+  const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(true);
   const [errorText, setErrorText] = useState("");
 
@@ -100,6 +103,23 @@ const Page : FC = () => {
     } else {
       return <Square className={className} size={16} strokeWidth={1}/>;
     }
+  }
+
+  const generateSaveLoad = () => {
+    return (
+      <div className="fixed -right-5 top-12 w-[19rem] pl-8 py-4 flex gap-x-4
+      bg-stone-300 rounded-2xl shadow-lg">
+        <button className="text-lg font-grotesk font-semibold uppercase
+        tracking-ultra underline hover:text-stone-500"
+        onClick={() => setSaving(true)}>
+          Save
+        </button>
+        <button className="text-lg font-grotesk font-semibold uppercase
+        tracking-ultra underline hover:text-stone-500">
+          Load
+        </button>
+      </div>
+    );
   }
 
   const generateWidgetToggle = () => {
@@ -282,6 +302,80 @@ const Page : FC = () => {
       allItems={ rightColumn }
       updateItems={ setRightColumn }
       onAddExperience={ onAddExperience }
+    />
+  }
+
+  const generateSavePopup = () => {
+    const onSave = (name : string) => {
+      let savedRightCol : rightColumnItem[] = [];
+      let index = 0;
+      while (rightColumn[index].isHeading || rightColumn[index].shown) {
+        let cur = structuredClone(rightColumn[index]);
+        delete cur.shown;
+        if (!cur.isHeading) {
+          cur = cur as experience;
+          delete cur.oldVer;
+          cur.bullets = cur.bullets.filter(bullet => bullet.shown);
+          cur.bullets = cur.bullets.map(bullet => {
+            delete bullet.shown;
+            return bullet;
+          })
+        }
+        savedRightCol.push(cur);
+        index++;
+      }
+      let savedContacts : contact[] = [];
+      contacts.forEach(cur => {
+        if (cur.shown) {
+          let newContact = structuredClone(cur);
+          delete newContact.shown;
+          savedContacts.push(newContact);
+        }
+      })
+      let savedSkills : skillList[] = [];
+      skills.forEach(cur => {
+        if (cur.shown) {
+          let newSkill = structuredClone(cur);
+          delete newSkill.shown;
+          delete newSkill.oldVer;
+          newSkill.items = newSkill.items.filter(item => item.shown);
+          newSkill.items = newSkill.items.map(item => {
+            delete item.shown;
+            return item;
+          })
+          savedSkills.push(newSkill);
+        }
+      })
+      let savedReferences : reference[] = [];
+      refrences.forEach(cur => {
+        if (cur.shown) {
+          let newReference = structuredClone(cur);
+          delete newReference.shown;
+          savedReferences.push(newReference);
+        }
+      })
+      const body : resume = {
+        id: uuid.v4(),
+        name: name,
+        rightColumn: savedRightCol,
+        contacts: savedContacts,
+        education: educationText,
+        skills: savedSkills,
+        references: savedReferences,
+        dateSaved: new Date().toISOString()
+      }
+      axios.post('http://localhost:3300/resumes/', body).then(() => {
+        alert("Resume was saved");
+      }).catch(err => {
+        alert("There was an error. The resume was not saved");
+        console.log(err);
+      })
+      setSaving(false);
+    }
+
+    return <SavePopup
+      onSave={ onSave }
+      onCancel={ () => setSaving(false) }
     />
   }
 
@@ -591,6 +685,8 @@ const Page : FC = () => {
       return generateFocusedSkill(focusedSkill);
     } else if (enteringNewReference) {
       return generateNewReferenceInput();
+    } else if (saving) {
+      return generateSavePopup();
     }
   }
 
@@ -653,6 +749,7 @@ const Page : FC = () => {
     { widgets ?
       <>
         { generateWidgetToggle() }
+        { generateSaveLoad() }
         { generateLeftColumnBuilder() }
         { generateRightColumnBuilder() }
         { generatePopupsJSX() }

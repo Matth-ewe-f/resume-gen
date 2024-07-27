@@ -1,3 +1,14 @@
+type resume = {
+  id: string,
+  name: name,
+  rightColumn: rightColumnItem[],
+  contacts: contact[],
+  education: string,
+  skills: skillList[],
+  references: reference[],
+  dateSaved: string,
+}
+
 type experience = {
   id: string,
   title: string,

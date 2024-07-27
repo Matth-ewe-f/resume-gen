@@ -179,8 +179,8 @@ const RightColBuilder : FC<props> = (props) => {
   }
 
   return (
-    <div className="fixed -right-5 top-12 px-6 py-4 bg-stone-300 rounded-2xl
-    shadow-lg">
+    <div className="fixed -right-5 top-32 w-[19rem] px-6 py-4 bg-stone-300
+    rounded-2xl shadow-lg">
       <h3 className="mb-2 text-lg font-grotesk font-semibold uppercase
       tracking-ultra">
         Shown
