@@ -10,6 +10,7 @@ import SkillsPopup from "@/components/SkillsPopup";
 import ReferencePopup from "@/components/ReferencePopup";
 import EducationPopup from "@/components/EducationPopup";
 import SavePopup from "@/components/SavePopup";
+import LoadPopup from "@/components/LoadPopup";
 const uuid = require("uuid");
 
 const Page : FC = () => {
@@ -30,6 +31,7 @@ const Page : FC = () => {
   const [widgets, setWidgets] = useState(true);
   const widgetsRef = useRef(widgets);
   const [saving, setSaving] = useState(false);
+  const [showLoad, setShowLoad] = useState(false);
   const [loading, setLoading] = useState(true);
   const [errorText, setErrorText] = useState("");
 
@@ -71,7 +73,7 @@ const Page : FC = () => {
       setErrorText("An Error Occured");
     });
 
-    const handleKeyPress = (event : KeyboardEvent) => {
+    const handleKeyPress = () => {
       if (!widgetsRef.current) {
         console.log("!!");
         setWidgets(true);
@@ -115,7 +117,8 @@ const Page : FC = () => {
           Save
         </button>
         <button className="text-lg font-grotesk font-semibold uppercase
-        tracking-ultra underline hover:text-stone-500">
+        tracking-ultra underline hover:text-stone-500"
+        onClick={() => setShowLoad(true)}>
           Load
         </button>
       </div>
@@ -124,7 +127,7 @@ const Page : FC = () => {
 
   const generateWidgetToggle = () => {
     const onClick = () => {
-      alert("Widgets will be hidden so that the page can be downloaded as a PDF. Press the space bar to show them again.");
+      alert("Widgets will be hidden so that the page can be downloaded as a PDF. Press any key to show them again.");
       setWidgets(false);
       widgetsRef.current = false;
     }
@@ -376,6 +379,113 @@ const Page : FC = () => {
     return <SavePopup
       onSave={ onSave }
       onCancel={ () => setSaving(false) }
+    />
+  }
+
+  const generateLoadPopup = () => {
+    // TODO
+    // What if an item gets deleted, but is still in an old resume??
+    // What if there are differences between the old version and the saved?
+
+    const onSelect = (selected : resume) => {
+      selected.rightColumn = selected.rightColumn.map(cur => {
+        if (cur.isHeading) {
+          return cur;
+        }
+        cur = cur as experience;
+        cur.bullets = cur.bullets.map(bullet => {
+          bullet.shown = true;
+          return bullet;
+        })
+        const saved = rightColumn.find(s => 
+          !s.isHeading && (s as experience).id == cur.id
+        ) as experience;
+        if (saved) {
+          cur.bullets.push(
+            ...saved.bullets.filter(
+              b1 => !cur.bullets.some(b2 => b1.id == b2.id)
+            ).map(b => {
+              b.shown = false;
+              return b;
+            })
+          );
+        }
+        cur.shown = true;
+        return cur;
+      })
+      selected.rightColumn.push(
+        ...rightColumn.filter(cur => {
+          return !cur.isHeading && !selected.rightColumn.some(i => 
+            !i.isHeading && (i as experience).id == (cur as experience).id
+          )
+        }).map(cur => {
+          cur.shown = false;
+          return cur;
+        })
+      );
+      console.log(selected.rightColumn);
+      selected.contacts = selected.contacts.map(cur => {
+        cur.shown = true;
+        return cur;
+      })
+      selected.contacts.push(
+        ...contacts.filter(cur => 
+          !selected.contacts.some(c => c.name == cur.name)
+        ).map(cur => {
+          cur.shown = false;
+          return cur;
+        })
+      );
+      selected.skills = selected.skills.map(cur => {
+        cur.shown = true;
+        cur.items = cur.items.map(item => {
+          item.shown = true;
+          return item;
+        })
+        const saved = skills.find(s => s.name == cur.name);
+        if (saved) {
+          cur.items.push(
+            ...saved.items.filter(
+              i1 => !cur.items.some(i2 => i1.id == i2.id)
+            ).map(item => {
+              item.shown = false;
+              return item;
+            })
+          )
+        }
+        return cur;
+      })
+      selected.skills.push(
+        ...skills.filter(cur => 
+          !selected.skills.some(s => s.name == cur.name)
+        ).map(cur => {
+          cur.shown = false;
+          return cur;
+        })
+      )
+      selected.references = selected.references.map(cur => {
+        cur.shown = true;
+        return cur;
+      })
+      selected.references.push(
+        ...refrences.filter(cur => 
+          !selected.references.some(r => r.name == cur.name)
+        ).map(cur => {
+          cur.shown = false;
+          return cur;
+        })
+      )
+      setRightColumn(selected.rightColumn);
+      setContacts(selected.contacts);
+      setEducationText(selected.education);
+      setSkills(selected.skills);
+      setReferences(selected.references);
+      setShowLoad(false);
+    }
+
+    return <LoadPopup
+      onSelect={onSelect}
+      onCancel={ () => setShowLoad(false) }
     />
   }
 
@@ -687,6 +797,8 @@ const Page : FC = () => {
       return generateNewReferenceInput();
     } else if (saving) {
       return generateSavePopup();
+    } else if (showLoad) {
+      return generateLoadPopup();
     }
   }
 
@@ -719,7 +831,7 @@ const Page : FC = () => {
         </h3>
         <div className="bg-stone-700 h-[1px] w-auto mx-24"/>
         <div className="flex flex-row w-full">
-          <div className="max-w-[19rem] flex-grow-[8] flex flex-col">
+          <div className="w-[19rem] flex-shrink-0 flex flex-col">
             <div className="pl-[4.5rem] bg-stone-100 pb-1">
               { generateContactSection() }
               <hr className="mt-4 mb-3 mr-8 border-dashed border-t border-stone-600"/>
@@ -733,7 +845,7 @@ const Page : FC = () => {
             </div>
             <div className="flex-grow bg-stone-100 min-h-4"/>
           </div>
-          <div className="flex-grow-[13] pl-6 pr-20 pt-2 pb-2">
+          <div className="pl-6 pr-20 pt-2 pb-2">
             {rightColumn.map((item, index) => {
               if (item.isHeading) {
                 return generateHeadingJSX(item as heading, index, "mt-1")
