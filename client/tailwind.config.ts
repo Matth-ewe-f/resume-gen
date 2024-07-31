@@ -22,6 +22,7 @@ const config: Config = {
       },
       fontSize: {
         "mini": "0.65rem",
+        "ssm": "0.75rem",
         "sm": "0.85rem",
         "base": "1rem",
         "4.5xl": '2.375rem',

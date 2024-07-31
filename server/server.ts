@@ -57,6 +57,34 @@ app.post('/resumes', (req: Request, res: Response) => {
   });
 })
 
+app.delete('/resumes/:id', (req: Request, res: Response) => {
+  fs.readFile(dataFilename, 'utf-8', (err, data) => {
+    if (err) {
+      console.error(err);
+      res.status(500).send("Problem writing data, nothing was deleted");
+    } else {
+      let obj : { resumes: any[] } = JSON.parse(data);
+      let index = obj.resumes.findIndex((e : any) => e.id == req.params.id);
+      if (index >= 0) {
+        const deletedItem = obj.resumes[index];
+        obj.resumes = [
+          ...obj.resumes.slice(0, index),
+          ...obj.resumes.slice(index + 1)
+        ]
+        fs.writeFile(dataFilename, JSON.stringify(obj), err => {
+          if (err) {
+            res.status(500).send("Problem writing data, nothing was deleted");
+          } else {
+            res.status(200).json(deletedItem);
+          }
+        })
+      } else {
+        res.status(500).send("Problem writing data, nothing was deleted");
+      }
+    }
+  });
+})
+
 app.post('/experiences', (req: Request, res: Response) => {
   const newExperience = req.body;
   fs.readFile(dataFilename, 'utf-8', (err, data) => {

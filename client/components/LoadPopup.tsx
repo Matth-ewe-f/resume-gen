@@ -1,4 +1,5 @@
 import axios from "axios";
+import { X } from "lucide-react";
 import { FC, useEffect, useState } from "react";
 
 type props = {
@@ -11,7 +12,10 @@ const LoadPopup : FC<props> = (props) => {
 
   useEffect(() => {
     axios.get("http://localhost:3300/resumes/").then(response => {
-      setResumes(response.data.resumes);
+      const sorted = response.data.resumes.sort((a : resume, b : resume) => {
+        return new Date(b.dateSaved).getTime() - new Date(a.dateSaved).getTime();
+      })
+      setResumes(sorted);
     }).catch(err => {
       alert("There was an error loading resumes");
       console.log(err);
@@ -19,10 +23,25 @@ const LoadPopup : FC<props> = (props) => {
     })
   }, [])
 
+  const deleteResume = (id : string) => {
+    const msg = "This resume will be permanently deleted. Are you sure?";
+    if (window.confirm(msg)) {
+      const url = `http://localhost:3300/resumes/${id}`;
+      axios.delete(url).then(response => {
+        const deleted = response.data;
+        setResumes(resumes.filter(cur => cur.id != deleted.id));
+        alert("The resume was deleted");
+      }).catch((err) => {
+        console.error(err);
+        alert("There was an error; nothing was deleted");
+      })
+    }
+  }
+
   return (
     <div className="fixed top-0 p-16 w-screen h-screen flex items-center
     justify-center bg-white bg-opacity-70">
-      <div className="w-[480px] px-6 py-4 bg-stone-300 rounded-2xl shadow-lg">
+      <div className="w-[560px] px-6 py-4 bg-stone-300 rounded-2xl shadow-lg">
         <h3 className="text-xl font-grotesk uppercase tracking-ultra">
           Load Resume
         </h3>
@@ -35,16 +54,23 @@ const LoadPopup : FC<props> = (props) => {
           :
             resumes.map(resume => {
               return (
-                <button
-                  className="flex-grow flex justify-between px-1 py-1 text-left
-                  border-b last:border-none border-stone-700 hover:bg-stone-400"
-                  onClick={() => props.onSelect(resume)}
+                <div
+                  className="flex-grow flex px-1 py-1 text-left border-b
+                  last:border-none border-stone-700 hover:bg-stone-400"
                 >
-                  <p>{resume.name}</p>
-                  <p className="text-sm italic">
-                    Saved on {new Date(resume.dateSaved).toLocaleDateString()}
-                  </p>
-                </button>
+                  <button className="flex-grow flex flex-row gap-x-1"
+                  onClick={() => props.onSelect(resume)}>
+                    <p>{resume.name}</p>
+                    <p className="text-ssm italic">
+                      ({new Date(resume.dateSaved).toLocaleDateString()})
+                    </p>
+                  </button>
+                  <button className="group"
+                  onClick={() => deleteResume(resume.id)}>
+                    <X className="text-red-600 group-hover:text-red-300"
+                    size={24}/>
+                  </button>
+                </div>
               )
             })
           }
