@@ -312,7 +312,8 @@ const Page : FC = () => {
     const onSave = (name : string) => {
       let savedRightCol : rightColumnItem[] = [];
       let index = 0;
-      while (rightColumn[index].isHeading || rightColumn[index].shown) {
+      while (index < rightColumn.length &&
+      (rightColumn[index].isHeading || rightColumn[index].shown)) {
         let cur = structuredClone(rightColumn[index]);
         delete cur.shown;
         if (!cur.isHeading) {
@@ -845,7 +846,7 @@ const Page : FC = () => {
             </div>
             <div className="flex-grow bg-stone-100 min-h-4"/>
           </div>
-          <div className="pl-6 pr-20 pt-2 pb-2">
+          <div className="flex-grow pl-6 pr-20 pt-2 pb-2">
             {rightColumn.map((item, index) => {
               if (item.isHeading) {
                 return generateHeadingJSX(item as heading, index, "mt-1")
