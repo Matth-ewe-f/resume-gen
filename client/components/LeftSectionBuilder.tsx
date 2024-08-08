@@ -19,7 +19,7 @@ const LeftSectionBuilder = <T extends leftColumnItem,>(props : props<T>) => {
 
   const capitalize = (s : string) => {
     return s.split(' ').map(
-      word => word[0].toUpperCase() + word.slice(1)
+      word => word != "" ? word[0].toUpperCase() + word.slice(1) : ""
     ).join(' ');
   }
 
