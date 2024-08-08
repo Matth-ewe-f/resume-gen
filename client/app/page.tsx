@@ -12,9 +12,14 @@ import EducationPopup from "@/components/EducationPopup";
 import SavePopup from "@/components/SavePopup";
 import LoadPopup from "@/components/LoadPopup";
 import { FaGithub } from "react-icons/fa";
+import HeaderPopup from "@/components/HeaderPopup";
 const uuid = require("uuid");
 
 const Page : FC = () => {
+  // header state
+  const [name, setName] = useState("");
+  const [tagline, setTagline] = useState("");
+  const [editingHeader, setEditingHeader] = useState(false);
   // state for the right column
   const [rightColumn, setRightColumn] = useState<rightColumnItem[]>([]);
   const [focusedRightItem, setFocusedRightItem] = useState(-1);
@@ -38,6 +43,8 @@ const Page : FC = () => {
 
   useEffect(() => {
     axios.get('http://localhost:3300/allData').then(response => {
+      setName(response.data.defaultName);
+      setTagline(response.data.defaultTagline);
       setRightColumn(response.data.experiences.map(
         (item : experience) => {
           item.bullets = item.bullets.map(bullet => {
@@ -145,6 +152,50 @@ const Page : FC = () => {
         </button>
       </div>
     );
+  }
+
+  const generateNameTaglineEdit = () => {
+    const onSubmit = (name : string, tagline : string) => {
+    setName(name);
+    setTagline(tagline);
+    setEditingHeader(false);
+  }
+
+  const onOverwrite = (newName : string, newTagline : string) => {
+    const url = 'http://localhost:3300/';
+    if (newName != name) {
+      axios.put(`${url}defaultName`, { newName : newName }).then(() => {
+        setName(newName);
+        alert("Updated default name");
+      }).catch((err) => {
+        alert("There was an error. Default name was not updated");
+        console.error(err);
+      });
+    }
+    if (newTagline != tagline) {
+      const body = { newTagline : newTagline }
+      axios.put(`${url}defaultTagline`, body).then(() => {
+        setTagline(newTagline);
+        alert("Updated default tagline");
+      }).catch((err) => {
+        alert("There was an error. Default tagline was not updated");
+        console.error(err);
+      })
+    }
+  }
+
+  return (
+    <div className="fixed top-0 p-16 w-screen h-screen flex items-center
+    justify-center bg-white bg-opacity-70">
+      <HeaderPopup
+        oldName={name}
+        oldTagline={tagline}
+        onClose={() => setEditingHeader(false)}
+        onSubmit={onSubmit}
+        onOverwrite={onOverwrite}
+      />
+    </div>
+  )
   }
 
   const generateNewContactInput = () => {
@@ -806,6 +857,8 @@ const Page : FC = () => {
   const generatePopupsJSX = () => {
     if (focusedRightItem >= 0) {
       return generateFocusedExperience(focusedRightItem);
+    } else if (editingHeader) {
+      return generateNameTaglineEdit();
     } else if (enteringNewContact) {
       return generateNewContactInput();
     } else if (editingEducation) {
@@ -841,14 +894,22 @@ const Page : FC = () => {
     <div className="w-full min-h-screen flex items-center justify-center">
       <div className={"w-[816px] h-[1056px] border-black "
         + (widgets ? 'border' : '')}>
-        <button className="w-full mt-8 text-4.5xl text-center font-medium uppercase
-        font-grotesk tracking-ultra">
-          Matthew Flynn
+        <button className="w-full" onClick={() => setEditingHeader(true)}>
+          <h1 className="mt-8 text-4.5xl text-center font-medium uppercase
+          font-grotesk tracking-ultra">
+            { name ? 
+              name 
+            : 
+              <span className="font-light italic text-stone-400">
+                No Name
+              </span>
+            }
+          </h1>
+          <h3 className="mb-4 text-center uppercase font-light
+          tracking-widest">
+            { tagline }
+          </h3>
         </button>
-        <h3 className="mb-4 text-center uppercase font-light
-        tracking-widest">
-          Programmer, Composer
-        </h3>
         <div className="bg-stone-700 h-[1px] w-auto mx-24"/>
         <div className="flex flex-row w-full">
           <div className="w-[19rem] flex-shrink-0 flex flex-col">
