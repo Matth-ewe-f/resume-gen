@@ -8,6 +8,7 @@ type props = {
 }
 
 const LoadPopup : FC<props> = (props) => {
+  const [loading, setLoading] = useState(true);
   const [resumes, setResumes] = useState<resume[]>([]);
 
   useEffect(() => {
@@ -16,6 +17,7 @@ const LoadPopup : FC<props> = (props) => {
         return new Date(b.dateSaved).getTime() - new Date(a.dateSaved).getTime();
       })
       setResumes(sorted);
+      setLoading(false);
     }).catch(err => {
       alert("There was an error loading resumes");
       console.log(err);
@@ -47,32 +49,38 @@ const LoadPopup : FC<props> = (props) => {
         </h3>
         <hr className="border-t border-stone-700"/>
         <div className="max-h-40 overflow-y-scroll flex flex-col">
-          { resumes.length == 0 ?
+          { loading ? 
             <div className="flex justify-center">
               <p className="py-3 text-lg">Loading...</p>
             </div>
           :
-            resumes.map(resume => {
-              return (
-                <div
-                  className="flex-grow flex px-1 py-1 text-left border-b
-                  last:border-none border-stone-700 hover:bg-stone-400"
-                >
-                  <button className="flex-grow flex flex-row gap-x-1"
-                  onClick={() => props.onSelect(resume)}>
-                    <p>{resume.name}</p>
-                    <p className="text-ssm italic">
-                      ({new Date(resume.dateSaved).toLocaleDateString()})
-                    </p>
-                  </button>
-                  <button className="group"
-                  onClick={() => deleteResume(resume.id)}>
-                    <X className="text-red-600 group-hover:text-red-300"
-                    size={24}/>
-                  </button>
-                </div>
-              )
-            })
+            ( resumes.length == 0 ?
+              <div className="flex justify-center">
+                <p className="py-3 text-lg">You have no saved resumes</p>
+              </div>
+            :
+              resumes.map(resume => {
+                return (
+                  <div
+                    className="flex-grow flex px-1 py-1 text-left border-b
+                    last:border-none border-stone-700 hover:bg-stone-400"
+                  >
+                    <button className="flex-grow flex flex-row gap-x-1"
+                    onClick={() => props.onSelect(resume)}>
+                      <p>{resume.name}</p>
+                      <p className="text-ssm italic">
+                        ({new Date(resume.dateSaved).toLocaleDateString()})
+                      </p>
+                    </button>
+                    <button className="group"
+                    onClick={() => deleteResume(resume.id)}>
+                      <X className="text-red-600 group-hover:text-red-300"
+                      size={24}/>
+                    </button>
+                  </div>
+                )
+              })
+            )
           }
         </div>
         <hr className="border-t border-stone-700"/>
