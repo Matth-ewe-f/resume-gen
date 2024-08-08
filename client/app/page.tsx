@@ -1,5 +1,5 @@
 "use client";
-import { LinkedinIcon, Mail, MousePointer, Music, Phone, Square } from "lucide-react";
+import { Github, LinkedinIcon, Mail, MousePointer, Music, Phone, Square } from "lucide-react";
 import { FC, useEffect, useRef, useState } from "react";
 import axios from "axios";
 import ContactPopup from "@/components/ContactPopup";
@@ -11,6 +11,7 @@ import ReferencePopup from "@/components/ReferencePopup";
 import EducationPopup from "@/components/EducationPopup";
 import SavePopup from "@/components/SavePopup";
 import LoadPopup from "@/components/LoadPopup";
+import { FaGithub } from "react-icons/fa";
 const uuid = require("uuid");
 
 const Page : FC = () => {
@@ -102,6 +103,8 @@ const Page : FC = () => {
       return (
         <LinkedinIcon className={className} size={16} strokeWidth={1}/>
       );
+    } else if (type == "github") {
+      return <FaGithub/>
     } else {
       return <Square className={className} size={16} strokeWidth={1}/>;
     }
@@ -821,7 +824,8 @@ const Page : FC = () => {
 
   return <>
     <div className="w-full min-h-screen flex items-center justify-center">
-      <div className="w-[816px] h-[1056px] border-black border">
+      <div className={"w-[816px] h-[1056px] border-black "
+        + (widgets ? 'border' : '')}>
         <button className="w-full mt-8 text-4.5xl text-center font-medium uppercase
         font-grotesk tracking-ultra">
           Matthew Flynn
