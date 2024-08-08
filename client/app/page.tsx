@@ -54,7 +54,7 @@ const Page : FC = () => {
           return item;
         }
       ));
-      setEducationText("**B.S. in Computer Science\nJohns Hopkins University, Baltimore MD\nMay 2024\nGPA: 3.77 (Combined B.S. and B.M.)\n \n**B.M. in Music for New Media\nPeabody Institute, Baltimore MD\nMay 2024");
+      setEducationText(response.data.defaultEducation);
       setSkills(response.data.skills.map(
         (list : skillList) => {
           list.shown = true;
@@ -181,6 +181,18 @@ const Page : FC = () => {
       setEditingEducation(false);
     }
 
+    const onOverwrite = (text : string) => {
+      const body = { newEducation : text };
+      const url = 'http://localhost:3300/defaultEducation';
+      axios.put(url, body).then(() => {
+        onSubmit(text);
+        alert("Updated default education");
+      }).catch((err) => {
+        alert("There was an error. Default education was not updated");
+        console.error(err);
+      })
+    }
+
     return (
       <div className="fixed top-0 p-16 w-screen h-screen flex items-center
       justify-center bg-white bg-opacity-70">
@@ -188,6 +200,7 @@ const Page : FC = () => {
           oldText={educationText}
           onClose={() => setEditingEducation(false)}
           onSubmit={onSubmit}
+          onOverwrite={onOverwrite}
         />
       </div>
     )
@@ -286,6 +299,7 @@ const Page : FC = () => {
 
   const generateLeftColumnBuilder = () => {
     return <LeftColBuilder
+      onEditEducation={() => setEditingEducation(true)}
       contacts={contacts}
       updateContacts={setContacts}
       onAddContact={ () => { setEnteringNewContact(true) } }
@@ -634,20 +648,21 @@ const Page : FC = () => {
       tracking-ultra">
         Education
       </h5>
-      <button className="text-left text-mini leading-tight"
-      onClick={() => setEditingEducation(true)}>
-        { educationText.split("\n").map(line => {
-          return <p className="min-h-2">
-            {line.split("**").map((piece, index) => {
-              if (index % 2 == 0) {
-                return piece;
-              } else {
-                return <span className="font-bold">{piece}</span>
-              }
-            })}
-          </p>
-        }) }
-      </button>
+      { educationText != "" &&
+        <div className="text-mini leading-tight">
+          { educationText.split("\n").map(line => {
+            return <p className="min-h-2">
+              {line.split("**").map((piece, index) => {
+                if (index % 2 == 0) {
+                  return piece;
+                } else {
+                  return <span className="font-bold">{piece}</span>
+                }
+              })}
+            </p>
+          }) }
+        </div>
+      }
     </>
   }
 

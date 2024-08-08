@@ -3,8 +3,16 @@ import fs from 'fs';
 import cors from 'cors';
 import bodyParser from 'body-parser';
 
+const processArgs = () => {
+  if (process.argv.length > 2) {
+    return `data/${process.argv[2]}`;
+  } else {
+    return "data/data.json";
+  }
+}
+
 const app : Express = express();
-const dataFilename = "data/data.json"
+const dataFilename = processArgs();
 const port = 3300;
 app.use(cors<Request>());
 
@@ -27,14 +35,14 @@ app.get('/allData', (req: Request, res: Response) => {
 
 app.get('/resumes', (req: Request, res: Response) => {
   fs.readFile(dataFilename, 'utf-8', (err, data) => {
-  if (err) {
-    console.error(err);
-    res.status(500).send("Problem reading data files");
-  } else {
-    let obj = JSON.parse(data);
-    res.status(200).json({ resumes: obj.resumes });
-  }
-})
+    if (err) {
+      console.error(err);
+      res.status(500).send("Problem reading data files");
+    } else {
+      let obj = JSON.parse(data);
+      res.status(200).json({ resumes: obj.resumes });
+    }
+  })
 })
 
 app.post('/resumes', (req: Request, res: Response) => {
@@ -212,6 +220,26 @@ app.delete('/contacts/:name', (req: Request, res: Response) => {
   });
 })
 
+app.put('/defaultEducation', (req: Request, res: Response) => {
+  const body = req.body;
+  fs.readFile(dataFilename, 'utf-8', (err, data) => {
+    if (err) {
+      console.error(err);
+      res.status(500).send("Problem writing data, no changes made");
+    } else {
+      let obj : { defaultEducation : string } = JSON.parse(data);
+      obj.defaultEducation = body.newEducation;
+      fs.writeFile(dataFilename, JSON.stringify(obj), err => {
+        if (err) {
+          res.status(500).send("Problem writing data, no changes made");
+        } else {
+          res.status(200).json(body);
+        }
+      })
+    }
+  });
+})
+
 app.post('/skillLists', (req : Request, res : Response) => {
   const newSkillList = req.body;
   fs.readFile(dataFilename, 'utf-8', (err, data) => {
@@ -245,7 +273,6 @@ app.put('/skillLists/:name', (req : Request, res : Response) => {
     } else {
       let obj : { skills : any[] } = JSON.parse(data);
       const index = obj.skills.findIndex(cur => cur.name == req.params.name);
-      console.log(index);
       obj.skills[index] = newSkillList;
       fs.writeFile(dataFilename, JSON.stringify(obj), err => {
         if (err) {
@@ -339,5 +366,5 @@ app.delete('/references/:name', (req: Request, res: Response) => {
 })
 
 app.listen(port, () => {
-  console.log(`[Server]: I am running at https://localhost:${port}`);
+  console.log(`Server running at https://localhost:${port}`);
 });

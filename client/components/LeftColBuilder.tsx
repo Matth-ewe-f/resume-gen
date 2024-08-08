@@ -2,6 +2,7 @@ import { FC } from "react";
 import LeftSectionBuilder from "./LeftSectionBuilder";
 
 type props = {
+  onEditEducation : () => void,
   contacts : contact[],
   updateContacts : (items : contact[]) => void,
   onAddContact : () => void,
@@ -24,6 +25,14 @@ const LeftColBuilder : FC<props> = (props) => {
       deleteText="Contact"
       deleteRoute="contacts"
     />
+    <div className="min-w-60 pl-8 pr-6 py-4 bg-stone-300
+    rounded-2xl shadow-lg">
+      <button className="text-lg font-grotesk font-semibold uppercase
+      tracking-ultra underline hover:text-stone-500"
+      onClick={props.onEditEducation}>
+        Edit Education
+      </button>
+    </div>
     <LeftSectionBuilder
       allItems={props.skills}
       updateItems={props.updateSkills}

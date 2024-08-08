@@ -6,10 +6,11 @@ type props = {
   oldText: string,
   onClose: () => void,
   onSubmit: (newText : string) => void,
+  onOverwrite: (newText : string) => void, 
 };
 
-const EducationPopup : FC<props> = ({ oldText, onClose, onSubmit }) => {
-  const [text, setText] = useState(oldText);
+const EducationPopup : FC<props> = (props) => {
+  const [text, setText] = useState(props.oldText);
 
   return (
     <div className="w-[480px] px-6 py-4 bg-stone-300 rounded-2xl shadow-lg">
@@ -17,7 +18,7 @@ const EducationPopup : FC<props> = ({ oldText, onClose, onSubmit }) => {
         <h3 className="text-xl font-grotesk uppercase tracking-ultra">
           Edit Education
         </h3>
-        <button onClick={ onClose }>
+        <button onClick={ props.onClose }>
           <X size={32} className="hover:text-stone-400"/>
         </button>
       </div>
@@ -31,9 +32,16 @@ const EducationPopup : FC<props> = ({ oldText, onClose, onSubmit }) => {
         <button 
           className="px-3 py-1.5 mr-4 rounded-md text-stone-200
         bg-stone-800 hover:bg-stone-600 disabled:bg-stone-600"
-          onClick={() => onSubmit(text) }
+          onClick={() => props.onSubmit(text) }
         >
           Save Changes
+        </button>
+        <button 
+          className="px-3 py-1.5 mr-4 rounded-md text-stone-200
+        bg-stone-800 hover:bg-stone-600 disabled:bg-stone-600"
+          onClick={() => props.onOverwrite(text) }
+        >
+          Overwrite Default
         </button>
       </div>
     </div>
