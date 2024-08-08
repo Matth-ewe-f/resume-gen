@@ -24,7 +24,7 @@ const SavePopup : FC<props> = (props) => {
           <button 
             className="px-3 py-1.5 mr-4 rounded-md text-stone-200
           bg-stone-800 hover:bg-stone-600"
-            onClick={() => props.onSave(name) }
+            onClick={() => props.onSave(name.trim()) }
           >
             Save This Resume
           </button>

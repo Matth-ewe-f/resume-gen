@@ -74,6 +74,7 @@ const SkillsPopup : FC<props> = (props) => {
 
   const onSave = () => {
     let newItem = structuredClone(skillList);
+    newItem.name = newItem.name.trim();
     delete newItem.oldVer;
     delete newItem.shown;
     props.saveSkillList(newItem);

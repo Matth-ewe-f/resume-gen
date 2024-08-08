@@ -15,7 +15,7 @@ const ContactPopup : FC<props> = ({onSubmit, onClose}) => {
 
   const formatData = () => {
     let result : contact = {
-      name: name,
+      name: name.trim(),
       value: value,
     }
     if (link.length > 0) {

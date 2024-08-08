@@ -16,10 +16,10 @@ const ReferencePopup : FC<props> = ({ onSubmit, onClose }) => {
 
   const formatData : () => reference = () => {
     return {
-      name: name,
-      subtitle: subtitle,
-      contact1: { text: contact1, icon: contactIcon1},
-      contact2: { text: contact2, icon: contactIcon2},
+      name: name.trim(),
+      subtitle: subtitle.trim(),
+      contact1: { text: contact1.trim(), icon: contactIcon1},
+      contact2: { text: contact2.trim(), icon: contactIcon2},
     }
   }
 
