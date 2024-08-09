@@ -1,0 +1,21 @@
+{
+  "name": "resume-gen",
+  "version": "1.0.0",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "concurrently \"cd client && npm run dev\" \"cd server && npm run dev\""
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Matth-ewe-f/resume-gen.git"
+  },
+  "author": "Matthew Flynn",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Matth-ewe-f/resume-gen/issues"
+  },
+  "homepage": "https://github.com/Matth-ewe-f/resume-gen#readme",
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}

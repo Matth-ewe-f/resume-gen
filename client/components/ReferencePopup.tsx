@@ -102,7 +102,7 @@ const ReferencePopup : FC<props> = ({ onSubmit, onClose }) => {
           onClick={() => onSubmit(formatData()) }
           disabled={!canSubmit()}
         >
-          Save New Contact
+          Save New Reference
         </button>
       </div>
     </div>
