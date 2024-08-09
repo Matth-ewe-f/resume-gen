@@ -2,8 +2,11 @@
   "name": "resume-gen",
   "version": "1.0.0",
   "scripts": {
+    "install": "concurrently \"cd client && npm i\" \"cd server && npm i\"",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "concurrently \"cd client && npm run dev\" \"cd server && npm run dev\""
+    "dev": "concurrently \"cd client && npm run dev\" \"cd server && npm run dev\"",
+    "build": "concurrently \"cd client && npm run build\" \"cd server && npm run build\"",
+    "start": "concurrently \"cd client && npm run start\" \"cd server && npm run start\""
   },
   "repository": {
     "type": "git",
