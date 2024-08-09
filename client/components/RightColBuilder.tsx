@@ -1,6 +1,6 @@
 import { ChevronDown, ChevronUp, Plus, Square, SquareCheckBig, X } from "lucide-react";
 import { FC } from "react";
-const uuid = require("uuid");
+import { v4 } from "uuid";
 
 type props = {
   allItems : rightColumnItem[],
@@ -166,7 +166,7 @@ const RightColBuilder : FC<props> = (props) => {
 
   const addExperience = () => {
     let newExperience : experience = {
-      id: uuid.v4(),
+      id: v4(),
       title: "New Item",
       dates: "XXX - Present",
       subtitle: "Job Title",

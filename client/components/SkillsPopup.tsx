@@ -1,7 +1,7 @@
 "use client"
 import { BoxSelect, ChevronDown, ChevronUp, Plus, Square, SquareCheckBig, X } from "lucide-react";
 import { FC, useState } from "react";
-const uuid = require("uuid");
+import { v4 } from "uuid";
 
 type props = {
   // undefined indicates the skill list is new
@@ -85,7 +85,7 @@ const SkillsPopup : FC<props> = (props) => {
 
   const addItem = () => {
     let newVer = structuredClone(skillList);
-    newVer.items.push({ id: uuid.v4(), text: "New Skill", shown: true });
+    newVer.items.push({ id: v4(), text: "New Skill", shown: true });
     onUpdate(newVer);
   }
 

@@ -1,7 +1,7 @@
 import { BoxSelect, ChevronDown, ChevronUp, Plus, Square, SquareCheckBig, X } from "lucide-react";
 import { FC } from "react";
 import SmartTextArea from "./SmartTextArea";
-const uuid = require("uuid");
+import { v4 } from "uuid";
 
 type props = {
   experience: experience,
@@ -103,7 +103,7 @@ const ExperiencePopup : FC<props> = (props) => {
     let newExperience = structuredClone(experience);
     if (value[value.length - 1] == '\n') {
       let bullets = newExperience.bullets;
-      const newBullet = { id : uuid.v4(), text: "" };
+      const newBullet = { id : v4(), text: "" };
       bullets = [
         ...bullets.slice(0, bulletIndex + 1),
         newBullet,
@@ -116,7 +116,7 @@ const ExperiencePopup : FC<props> = (props) => {
   }
 
   const addNewBullet = () => {
-    const newBullet = { id: uuid.v4(), text: "New Bullet", shown: true };
+    const newBullet = { id: v4(), text: "New Bullet", shown: true };
     let newExperience = structuredClone(experience);
     newExperience.bullets.push(newBullet);
     onUpdate(newExperience);

@@ -13,7 +13,7 @@ import SavePopup from "@/components/SavePopup";
 import LoadPopup from "@/components/LoadPopup";
 import { FaGithub } from "react-icons/fa";
 import HeaderPopup from "@/components/HeaderPopup";
-const uuid = require("uuid");
+import { v4 } from "uuid";
 
 const Page : FC = () => {
   // header state
@@ -442,7 +442,7 @@ const Page : FC = () => {
         }
       })
       const body : resume = {
-        id: uuid.v4(),
+        id: v4(),
         name: name,
         rightColumn: savedRightCol,
         contacts: savedContacts,
