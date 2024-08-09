@@ -57,14 +57,14 @@ const Page : FC = () => {
       ));
       setContacts(response.data.contacts.map(
         (item : contact) => {
-          item.shown = true;
+          item.shown = false;
           return item;
         }
       ));
       setEducationText(response.data.defaultEducation);
       setSkills(response.data.skillLists.map(
         (list : skillList) => {
-          list.shown = true;
+          list.shown = false;
           list.items = list.items.map(item => {
             item.shown = true; return item 
           });
@@ -72,7 +72,7 @@ const Page : FC = () => {
         }
       ));
       setReferences(response.data.references.map((item : reference) => {
-        item.shown = true;
+        item.shown = false;
         return item;
       }));
       setLoading(false);
