@@ -25,3 +25,7 @@
 .font-style-inherit {
   font-style: inherit;
 }
+
+.transition-position {
+  transition-property: left right top bottom;
+}

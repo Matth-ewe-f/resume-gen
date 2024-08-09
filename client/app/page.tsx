@@ -119,8 +119,11 @@ const Page : FC = () => {
 
   const generateSaveLoad = () => {
     return (
-      <div className="fixed -right-5 top-12 w-[19rem] pl-8 py-4 flex gap-x-4
-      bg-stone-300 rounded-2xl shadow-lg">
+      <div
+        className={"fixed top-12 w-[19rem] pl-8 py-4 flex gap-x-4 " +
+        "bg-stone-300 rounded-2xl shadow-lg trasition-all duration-500 " +
+        (widgets ? '-right-5' : '-right-80')}
+      >
         <button className="text-lg font-grotesk font-semibold uppercase
         tracking-ultra underline hover:text-stone-500"
         onClick={() => setSaving(true)}>
@@ -143,8 +146,11 @@ const Page : FC = () => {
     }
 
     return (
-      <div className="fixed -left-5 top-12 w-72 pl-8 py-4 bg-stone-300
-      rounded-2xl shadow-lg">
+      <div 
+        className={"fixed top-12 w-72 pl-8 py-4 bg-stone-300 rounded-2xl " +
+        "shadow-lg transition-all duration-500 " +
+        (widgets ? '-left-5' : '-left-72')}
+      >
         <button className="text-lg font-grotesk font-semibold uppercase
         tracking-ultra underline hover:text-stone-500"
         onClick={onClick}>
@@ -365,6 +371,7 @@ const Page : FC = () => {
 
   const generateLeftColumnBuilder = () => {
     return <LeftColBuilder
+      show={widgets}
       onEditEducation={() => setEditingEducation(true)}
       contacts={contacts}
       updateContacts={setContacts}
@@ -385,6 +392,7 @@ const Page : FC = () => {
     }
 
     return <RightColBuilder
+      shown={ widgets }
       allItems={ rightColumn }
       updateItems={ setRightColumn }
       onAddExperience={ onAddExperience }
@@ -954,17 +962,11 @@ const Page : FC = () => {
         <div className="bg-stone-700 h-[1px] w-auto mx-24"/>
       </div>
     </div>
-    { widgets ?
-      <>
-        { generateWidgetToggle() }
-        { generateSaveLoad() }
-        { generateLeftColumnBuilder() }
-        { generateRightColumnBuilder() }
-        { generatePopupsJSX() }
-      </>
-    :
-      ''
-    }
+    { generateWidgetToggle() }
+    { generateLeftColumnBuilder() }
+    { generateSaveLoad() }
+    { generateRightColumnBuilder() }
+    { widgets && generatePopupsJSX() }
   </>;
 }
 

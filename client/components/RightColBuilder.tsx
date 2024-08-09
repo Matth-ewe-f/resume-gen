@@ -3,6 +3,7 @@ import { FC } from "react";
 import { v4 } from "uuid";
 
 type props = {
+  shown: boolean,
   allItems : rightColumnItem[],
   updateItems : (newItems : rightColumnItem[]) => void,
   onAddExperience : () => void,
@@ -179,8 +180,9 @@ const RightColBuilder : FC<props> = (props) => {
   }
 
   return (
-    <div className="fixed -right-5 top-32 w-[19rem] px-6 py-4 bg-stone-300
-    rounded-2xl shadow-lg">
+    <div className={"fixed top-32 w-[19rem] px-6 py-4 bg-stone-300 " +
+    "rounded-2xl shadow-lg transition-all duration-500 " +
+    (props.shown ? '-right-5' : '-right-80')}>
       <h3 className="mb-2 text-lg font-grotesk font-semibold uppercase
       tracking-ultra">
         Shown
