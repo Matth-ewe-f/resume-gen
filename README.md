@@ -1,36 +1,56 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# Title
+Create perfectly tailored resumes for any job in minutes. See the [Installation Guide](#installation-guide) to get started.
 
-## Getting Started
+## Description
+*title* allows you to easily create dozens of resumes tailored to a myriad of diverse job positions. Text that you write for one resume is saved, and can be added to another resume in a single click. Individual bullet points under any heading can be toggled on and off, allowing you to highlight exactly what you want about your experiences. Past resumes can be saved, duplicated, edited, and redownloaded, so you'll never have to wrack your brain to remember how you phrased that *one bullet point* you deleted even though it was *just perfect*.
 
-First, run the development server:
+*title* was created by Matthew Flynn to assist in his post-graduation job search. At its inception it was meant to be a simple personal project, and so this public-facing version is still a work in progress. See [Limitations](#current-limitations) for more details.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## Built With
+* [Next.js](https://nextjs.org/)
+* [React](https://react.dev/)
+* [Tailwind CSS](https://tailwindcss.com/)
+* [Express.js](https://expressjs.com/)
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Installation Guide
+1. [Install Node.js and npm](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm)
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+2. Clone this repository with
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
+    `git clone https://github.com/Matth-ewe-f/resume-gen`
 
-## Learn More
+3. Install dependencies by running in the root folder
 
-To learn more about Next.js, take a look at the following resources:
+    `npm i`
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+4. Build and start the software by running in the root folder
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
+    `npm run build`
 
-## Deploy on Vercel
+    `npm run start`
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+5. Visit `localhost:3000` in your browser to see the application running
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+## Current Limitations
+
+### User Interface
+* Parts of the user interface are a little bit unintuitive. Particularly there are items in the resume which, when clicked, allow edits, and others which need to be edited through widgets on the sides on the screen.
+* Future solutions:
+    * The UI may be incrementally improved upon as the project develops.
+
+### Layout and Design
+* The design of the resume (layout, colors, fonts, etc.) is completely fixed. The only customization options apply to the text content of the resume.
+* Workaround: Anyone with knowledge of React and Tailwind CSS can adjust the design by modifying the code in `client/app/page.tsx`. However, because this was not the intended behavior of users, the file is not written in a way that is condusive to this. 
+* Future solutions:
+    * `client/app/page.tsx` may be refactored into multiple files which make it clear to advanced users where to edit JSX to affect the design of the resume.
+    * Some UI may be implemented to allow users to edit the design of the resume without modifying any code. This will likely be a more significant undertaking
+
+### Resume Sections
+* The different sections in a resume (work experience, contact, education, skills, references) cannot be renamed, re-ordered, hidden, and new sections cannot be added. However headings can be added in the work experience section.
+* Future Solutions:
+    * Sections may be hidden automatically if they are empty (no items is checked)
+    * Renaming of sections may be implemented
+    * The ability to add new sections may be implemented. This would be a significant undertaking because there would need to be a lot of flexibility in what types of sections can be added in order for this featuer to be useful. This would make the UI to build these sections difficult to build.
+
+### Testing
+* There are no tests written for any of the features implemented, and there are currently no plans to do so.
