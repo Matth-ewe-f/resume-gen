@@ -19,25 +19,20 @@ const Page : FC = () => {
   // header state
   const [name, setName] = useState("");
   const [tagline, setTagline] = useState("");
-  const [editingHeader, setEditingHeader] = useState(false);
   // state for the right column
   const [rightColumn, setRightColumn] = useState<rightColumnItem[]>([]);
   const [focusedRightItem, setFocusedRightItem] = useState(-1);
   const [focusedIsNew, setFocusedIsNew] = useState(false);
   // state for the left column
   const [contacts, setContacts] = useState<contact[]>([]);
-  const [enteringNewContact, setEnteringNewContact] = useState(false);
   const [educationText, setEducationText] = useState("");
-  const [editingEducation, setEditingEducation] = useState(false);
   const [skills, setSkills] = useState<skillList[]>([]);
   const [focusedSkill, setFocusedSkill] = useState(-1);
   const [refrences, setReferences] = useState<reference[]>([]);
-  const [enteringNewReference, setEnteringNewReference] = useState(false);
   // general state
+  const [currentPopup, setCurrentPopup] = useState("");
   const [widgets, setWidgets] = useState(true);
   const widgetsRef = useRef(widgets);
-  const [saving, setSaving] = useState(false);
-  const [showLoad, setShowLoad] = useState(false);
   const [loading, setLoading] = useState(true);
   const [errorText, setErrorText] = useState("");
 
@@ -94,6 +89,17 @@ const Page : FC = () => {
     return () => window.removeEventListener("keydown", handleKeyPress);
   }, []);
 
+  const showPopup = (popupName : string) => {
+    if (widgets) {
+      setCurrentPopup(popupName);
+    }
+  }
+
+  const hideWidgets = () => {
+    setCurrentPopup("");
+    setWidgets(false);
+  }
+
   const getIconForContact = (type : string) => {
     const className = "text-stone-600 shrink-0";
     if (type == "phone") {
@@ -126,12 +132,12 @@ const Page : FC = () => {
       >
         <button className="text-lg font-grotesk font-semibold uppercase
         tracking-ultra underline hover:text-stone-500"
-        onClick={() => setSaving(true)}>
+        onClick={() => showPopup("save")}>
           Save
         </button>
         <button className="text-lg font-grotesk font-semibold uppercase
         tracking-ultra underline hover:text-stone-500"
-        onClick={() => setShowLoad(true)}>
+        onClick={() => showPopup("load")}>
           Load
         </button>
       </div>
@@ -141,7 +147,7 @@ const Page : FC = () => {
   const generateWidgetToggle = () => {
     const onClick = () => {
       alert("Widgets will be hidden so that the page can be downloaded as a PDF. Press any key to show them again.");
-      setWidgets(false);
+      hideWidgets();
       widgetsRef.current = false;
     }
 
@@ -164,7 +170,7 @@ const Page : FC = () => {
     const onSubmit = (name : string, tagline : string) => {
     setName(name);
     setTagline(tagline);
-    setEditingHeader(false);
+    showPopup("header");
   }
 
   const onOverwrite = (newName : string, newTagline : string) => {
@@ -181,7 +187,9 @@ const Page : FC = () => {
       }).finally(() => {
         nameSet = true;
         console.log(nameSet, taglineSet);
-        setEditingHeader(!(nameSet && taglineSet))
+        if (!(nameSet && taglineSet)) {
+          showPopup("");
+        }
       });
     }
     if (!taglineSet) {
@@ -195,7 +203,9 @@ const Page : FC = () => {
       }).finally(() => {
         taglineSet = true;
         console.log(nameSet, taglineSet);
-        setEditingHeader(!(nameSet && taglineSet))
+        if (!(nameSet && taglineSet)) {
+          showPopup("");
+        }
       });
     }
   }
@@ -206,7 +216,7 @@ const Page : FC = () => {
       <HeaderPopup
         oldName={name}
         oldTagline={tagline}
-        onClose={() => setEditingHeader(false)}
+        onClose={() => showPopup("")}
         onSubmit={onSubmit}
         onOverwrite={onOverwrite}
       />
@@ -216,7 +226,7 @@ const Page : FC = () => {
 
   const generateNewContactInput = () => {
     const onClose = () => {
-      setEnteringNewContact(false)
+      showPopup("")
     }
 
     const onSubmit = (newContact : contact) => {
@@ -231,7 +241,7 @@ const Page : FC = () => {
         alert("Something went wrong, no new contact info created");
         console.error(err);
       })
-      setEnteringNewContact(false);
+      showPopup("");
     }
 
     return (
@@ -245,7 +255,7 @@ const Page : FC = () => {
   const generateEducationEditor = () => {
     const onSubmit = (text : string) => {
       setEducationText(text);
-      setEditingEducation(false);
+      showPopup("");
     }
 
     const onOverwrite = (text : string) => {
@@ -265,7 +275,7 @@ const Page : FC = () => {
       justify-center bg-white bg-opacity-70">
         <EducationPopup
           oldText={educationText}
-          onClose={() => setEditingEducation(false)}
+          onClose={() => showPopup("")}
           onSubmit={onSubmit}
           onOverwrite={onOverwrite}
         />
@@ -286,14 +296,14 @@ const Page : FC = () => {
         alert("Something went wrong; no new reference was created");
         console.error(err);
       })
-      setEnteringNewReference(false);
+      showPopup("");
     }
 
     return (
       <div className="fixed top-0 p-16 w-screen h-screen flex items-center
       justify-center bg-white bg-opacity-70">
         <ReferencePopup
-          onClose={ () => setEnteringNewReference(false) }
+          onClose={ () => showPopup("") }
           onSubmit={onSubmit}
         />
       </div>
@@ -356,14 +366,19 @@ const Page : FC = () => {
       })
     }
 
+    const onClose = () => {
+      setFocusedSkill(-1);
+      showPopup("");
+    }
+
     return (
       <div className="fixed top-0 p-16 w-screen h-screen flex items-center
       justify-center bg-white bg-opacity-70">
         <SkillsPopup 
-          skillList={ index == -2 ? undefined : skills[focusedSkill] }
+          skillList={ index < 0 ? undefined : skills[focusedSkill] }
           updateSkillList={ updateFocused }
-          saveSkillList={ index == -2 ? saveNew : saveChanges }
-          onClose={ () => setFocusedSkill(-1) }
+          saveSkillList={ index < 0 ? saveNew : saveChanges }
+          onClose={ onClose }
         />
       </div>
     )
@@ -372,22 +387,23 @@ const Page : FC = () => {
   const generateLeftColumnBuilder = () => {
     return <LeftColBuilder
       show={widgets}
-      onEditEducation={() => setEditingEducation(true)}
+      onEditEducation={() => showPopup("education")}
       contacts={contacts}
       updateContacts={setContacts}
-      onAddContact={ () => { setEnteringNewContact(true) } }
+      onAddContact={ () => showPopup("contact") }
       skills={skills}
       updateSkills={setSkills}
-      onAddSkill={ () => { setFocusedSkill(-2) }}
+      onAddSkill={ () => { showPopup("skills") }}
       references={refrences}
       updateReferences={setReferences}
-      onAddReference={ () => { setEnteringNewReference(true) } }
+      onAddReference={ () => { showPopup("references") } }
     />
   }
 
   const generateRightColumnBuilder = () => {
     const onAddExperience = () => {
       setFocusedIsNew(true);
+      showPopup("experience");
       setFocusedRightItem(0);
     }
 
@@ -465,12 +481,12 @@ const Page : FC = () => {
         alert("There was an error. The resume was not saved");
         console.log(err);
       })
-      setSaving(false);
+      showPopup("");
     }
 
     return <SavePopup
       onSave={ onSave }
-      onCancel={ () => setSaving(false) }
+      onCancel={ () => showPopup("") }
     />
   }
 
@@ -572,12 +588,12 @@ const Page : FC = () => {
       setEducationText(selected.education);
       setSkills(selected.skills);
       setReferences(selected.references);
-      setShowLoad(false);
+      showPopup("");
     }
 
     return <LoadPopup
       onSelect={onSelect}
-      onCancel={ () => setShowLoad(false) }
+      onCancel={ () => showPopup("") }
     />
   }
 
@@ -630,6 +646,7 @@ const Page : FC = () => {
         alert("Changes saved");
         if (focusedIsNew) {
           setFocusedIsNew(false);
+          showPopup("");
           setFocusedRightItem(-1);
         }
       }).catch(() => {
@@ -652,6 +669,7 @@ const Page : FC = () => {
           ];
           setRightColumn(newAllRight);
           alert("The item was deleted");
+          showPopup("");
           setFocusedRightItem(-1);
         }).catch(() => {
           alert("There was an error, nothing was deleted");
@@ -661,6 +679,7 @@ const Page : FC = () => {
 
     const onClose = () => {
       setFocusedRightItem(-1);
+      showPopup("");
       setFocusedIsNew(false)
       if (focusedIsNew) {
         setRightColumn([...rightColumn.slice(1)]);
@@ -746,6 +765,11 @@ const Page : FC = () => {
       return s
     }
 
+    const onClick = (index : number) => {
+      setFocusedSkill(index);
+      showPopup("skills");
+    }
+
     return <>
       <h5 className="my-2 text font-grotesk font-medium uppercase
       tracking-ultra">
@@ -756,7 +780,7 @@ const Page : FC = () => {
           if (list.shown) {
             return (
               <button className="block w-full text-left"
-              onClick={ () => setFocusedSkill(index) }>
+              onClick={ () => onClick(index) }>
                 <p className="font-bold">{list.name}</p>
                 <p className="mr-6 mb-2 text-justify">
                   { createListString(list) }
@@ -843,11 +867,16 @@ const Page : FC = () => {
       className = "";
     }
 
+    const onClick = () => {
+      setFocusedRightItem(index);
+      showPopup("experience");
+    }
+
     return (
       <button 
         key={`right-col-${index}`}
         className={`block w-full ${className}`}
-        onClick={ () => setFocusedRightItem(index) }
+        onClick={ onClick }
       >
         <div className="text-left leading-tight">
           <div className="flex flex-row justify-between items-end">
@@ -878,21 +907,21 @@ const Page : FC = () => {
   }
 
   const generatePopupsJSX = () => {
-    if (focusedRightItem >= 0) {
+    if (currentPopup == "experience") {
       return generateFocusedExperience(focusedRightItem);
-    } else if (editingHeader) {
+    } else if (currentPopup == "header") {
       return generateNameTaglineEdit();
-    } else if (enteringNewContact) {
+    } else if (currentPopup == "contact") {
       return generateNewContactInput();
-    } else if (editingEducation) {
+    } else if (currentPopup == "education") {
       return generateEducationEditor();
-    } else if (focusedSkill >= 0 || focusedSkill == -2) {
+    } else if (currentPopup == "skills") {
       return generateFocusedSkill(focusedSkill);
-    } else if (enteringNewReference) {
+    } else if (currentPopup == "references") {
       return generateNewReferenceInput();
-    } else if (saving) {
+    } else if (currentPopup == "save") {
       return generateSavePopup();
-    } else if (showLoad) {
+    } else if (currentPopup == "load") {
       return generateLoadPopup();
     }
   }
@@ -917,7 +946,7 @@ const Page : FC = () => {
     <div className="w-full min-h-screen flex items-center justify-center">
       <div className={"w-[816px] h-[1056px] border-black "
         + (widgets ? 'border' : '')}>
-        <button className="w-full" onClick={() => setEditingHeader(true)}>
+        <button className="w-full" onClick={() => showPopup("header")}>
           <h1 className="mt-8 text-4.5xl text-center font-medium uppercase
           font-grotesk tracking-ultra">
             { name ? 
