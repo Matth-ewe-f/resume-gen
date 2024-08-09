@@ -52,5 +52,8 @@ Create perfectly tailored resumes for any job in minutes. See the [Installation 
     * Renaming of sections may be implemented
     * The ability to add new sections may be implemented. This would be a significant undertaking because there would need to be a lot of flexibility in what types of sections can be added in order for this featuer to be useful. This would make the UI to build these sections difficult to build.
 
+### Deployment
+* There is no deployed version of this application. Because *title* began as a personal project, it was easy for me to use the app by running it locally and writing data to a JSON file on my disk. A deployed version would require a real database, and therefore would restrict users to only using the application when connected to the internet. This seems like a negative to me, so there are currently no plans to create a deployed version of the app.
+
 ### Testing
 * There are no tests written for any of the features implemented, and there are currently no plans to do so.
