@@ -62,7 +62,7 @@ const Page : FC = () => {
         }
       ));
       setEducationText(response.data.defaultEducation);
-      setSkills(response.data.skills.map(
+      setSkills(response.data.skillLists.map(
         (list : skillList) => {
           list.shown = true;
           list.items = list.items.map(item => {
@@ -163,16 +163,22 @@ const Page : FC = () => {
 
   const onOverwrite = (newName : string, newTagline : string) => {
     const url = 'http://localhost:3300/';
-    if (newName != name) {
+    let nameSet = newName == name;
+    let taglineSet = newTagline == tagline;
+    if (!nameSet) {
       axios.put(`${url}defaultName`, { newName : newName }).then(() => {
         setName(newName);
         alert("Updated default name");
       }).catch((err) => {
         alert("There was an error. Default name was not updated");
         console.error(err);
+      }).finally(() => {
+        nameSet = true;
+        console.log(nameSet, taglineSet);
+        setEditingHeader(!(nameSet && taglineSet))
       });
     }
-    if (newTagline != tagline) {
+    if (!taglineSet) {
       const body = { newTagline : newTagline }
       axios.put(`${url}defaultTagline`, body).then(() => {
         setTagline(newTagline);
@@ -180,7 +186,11 @@ const Page : FC = () => {
       }).catch((err) => {
         alert("There was an error. Default tagline was not updated");
         console.error(err);
-      })
+      }).finally(() => {
+        taglineSet = true;
+        console.log(nameSet, taglineSet);
+        setEditingHeader(!(nameSet && taglineSet))
+      });
     }
   }
 
@@ -308,9 +318,10 @@ const Page : FC = () => {
           return item;
         });
         newSkills[index] = posted;
+        alert("Skill list edited");
         setSkills(newSkills);
       }).catch(() => {
-        alert("There was an error, changes not written.");
+        alert("There was an error, changes not written");
       })
     }
 
@@ -332,6 +343,10 @@ const Page : FC = () => {
         });
         newSkills.push(posted);
         setSkills(newSkills);
+        alert("New skill list created");
+      }).catch(err => {
+        alert("There was an error. No new skills created");
+        console.error(err);
       })
     }
 

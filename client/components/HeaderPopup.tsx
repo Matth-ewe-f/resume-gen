@@ -13,6 +13,10 @@ const HeaderPopup : FC<props> = (props) => {
   const [name, setName] = useState(props.oldName);
   const [tagline, setTagline] = useState(props.oldTagline);
 
+  const isAnythingChanged = () => {
+    return name != props.oldName || tagline != props.oldTagline;
+  }
+
   return (
     <div className="w-[480px] px-6 py-4 bg-stone-300 rounded-2xl shadow-lg">
       <div className="flex flex-row items-center justify-between">
@@ -37,20 +41,26 @@ const HeaderPopup : FC<props> = (props) => {
         />
       </div>
       <div className="mt-2 flex justify-center">
-        <button 
-          className="px-3 py-1.5 mr-4 rounded-md text-stone-200
-        bg-stone-800 hover:bg-stone-600 disabled:bg-stone-600"
-          onClick={() => props.onSubmit(name, tagline) }
-        >
-          Save Changes
-        </button>
-        <button 
-          className="px-3 py-1.5 mr-4 rounded-md text-stone-200
-        bg-stone-800 hover:bg-stone-600 disabled:bg-stone-600"
-          onClick={() => props.onOverwrite(name, tagline) }
-        >
-          Overwrite Default
-        </button>
+        { isAnythingChanged() ?
+          <>
+            <button 
+              className="px-3 py-1.5 mr-4 rounded-md text-stone-200
+            bg-stone-800 hover:bg-stone-600 disabled:bg-stone-600"
+              onClick={() => props.onSubmit(name, tagline) }
+            >
+              Save Changes
+            </button>
+            <button 
+              className="px-3 py-1.5 mr-4 rounded-md text-stone-200
+            bg-stone-800 hover:bg-stone-600 disabled:bg-stone-600"
+              onClick={() => props.onOverwrite(name, tagline) }
+            >
+              Overwrite Default
+            </button>
+          </>
+        :
+          <p className="py-1.5">No Changes</p>
+        }
       </div>
     </div>
   );

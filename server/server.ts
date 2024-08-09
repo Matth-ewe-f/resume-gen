@@ -21,30 +21,124 @@ app.use(cors<Request>());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 
-const putField = (app : Express, route : string, valueName : string) => {
-  app.put(`/${route}`, (req: Request, res: Response) => {
-    const body = req.body;
+const writeToFile = (changes: (obj : any) => [any, any]) => {
+  return new Promise((resolve, reject) => {
     lock.writeLock((release) => {
       fs.readFile(dataFilename, 'utf-8', (err, data) => {
         if (err) {
-          console.error(err);
-          res.status(500).send("Problem writing data, no changes made");
           release();
+          reject();
         } else {
-          let obj : any = JSON.parse(data);
-          obj[route] = body[valueName];
+          let [obj, response] = changes(JSON.parse(data));
+          if (obj == false) {
+            release();
+            resolve(false);
+            return;
+          }
           fs.writeFile(dataFilename, JSON.stringify(obj), err => {
             if (err) {
-              res.status(500).send("Problem writing data, no changes made");
               release();
+              reject();
             } else {
-              res.status(200).json(body);
               release();
+              resolve(response);
             }
           })
         }
-      });
-    });
+      })
+    })
+  })
+};
+
+
+const putField = (app : Express, route : string, valueName : string) => {
+  app.put(`/${route}`, (req: Request, res: Response) => {
+    writeToFile(obj => {
+      obj[route] = req.body[valueName];
+      return [obj, req.body];
+    }).then(response => {
+      res.status(200).json(response);
+    }).catch(err => {
+      res.status(500).send(`Internal Server Error: ${err}`)
+    })
+  })
+};
+
+const postObject = (app : Express, route : string) => {
+  postObjectNoDuplicates(app, route, () => false);
+}
+
+const postObjectNoDuplicates =
+(app: Express, route: string, equalityCheck: (a: any, b: any) => boolean) => {
+  app.post(`/${route}`, (req: Request, res: Response) => {
+    const body = req.body;
+    writeToFile(obj => {
+      if (obj[route].some((cur : any) => equalityCheck(cur, body))) {
+        return [false, false];
+      }
+      obj[route].push(body);
+      return [obj, body];
+    }).then(response => {
+      if (response == false) {
+        res.status(400).send(`cannot create duplicate ${route}`);
+      } else {
+        res.status(200).json(response);
+      }
+    }).catch(err => {
+      res.status(500).send(`Internal Server Error: ${err}`);
+    }) 
+  })
+}
+
+
+const deleteObjectByProperty =
+(app : Express, route : string, property : string) => {
+  app.delete(`/${route}/:${property}`, (req: Request, res: Response) => {
+    writeToFile(obj => {
+      let index = obj[route].findIndex(
+        (e : any) => e[property] == req.params[property]
+      );
+      if (index >= 0) {
+        const deletedItem = obj[route].splice(index, 1)[0];
+        return [obj, deletedItem];
+      } else {
+        return [false, false];
+      }
+    }).then(response => {
+      if (response == false) {
+        res.status(400).send("attempted to delete object that doesn't exist");
+      } else {
+        res.status(200).json(response);
+      }
+    }).catch(err => {
+      res.status(500).send(`Internal Server Error: ${err}`);
+    })
+  })
+}
+
+const putObjectByProperty =
+(app : Express, route : string, property : string) => {
+  app.put(`/${route}/:${property}`, (req: Request, res: Response) => {
+    const body = req.body;
+    writeToFile(obj => {
+      let index = obj[route].findIndex(
+        (e : any) => e[property] == req.params[property]
+      );
+      if (index >= 0) {
+        obj[route][index] = body;
+        return [obj, body];
+      } else {
+        return [false, false];
+      }
+    }).then(response => {
+      if (response == false) {
+        res.status(400).send("attempted to update object that doesn't exist");
+      } else {
+        res.status(200).json(response);
+      }
+    }).catch(err => {
+      res.status(500).send(`Internal Server Error: ${err}`);
+    })
   })
 }
 
@@ -54,13 +148,14 @@ app.get('/allData', (req: Request, res: Response) => {
       if (err) {
         console.error(err);
         res.status(500).send("Problem reading data files");
+        release();
       } else {
         let obj = JSON.parse(data);
         delete obj.resumes;
         res.status(200).json(obj);
+        release();
       }
     })
-    release();
   })
 });
 
@@ -70,357 +165,45 @@ putField(app, 'defaultTagline', 'newTagline');
 
 putField(app, 'defaultEducation', 'newEducation');
 
-
 app.get('/resumes', (req: Request, res: Response) => {
   lock.readLock((release) => {
     fs.readFile(dataFilename, 'utf-8', (err, data) => {
       if (err) {
         console.error(err);
         res.status(500).send("Problem reading data files");
+        release();
       } else {
         let obj = JSON.parse(data);
         res.status(200).json({ resumes: obj.resumes });
+        release();
       }
     });
-    release();
   });
 })
 
-app.post('/resumes', (req: Request, res: Response) => {
-  const newResume = req.body;
-  lock.writeLock((release) => {
-    fs.readFile(dataFilename, 'utf-8', (err, data) => {
-      if (err) {
-        console.error(err);
-        res.status(500).send("Problem writing data, no changes made");
-      } else {
-        let obj : { resumes: any[] } = JSON.parse(data);
-        obj.resumes.push(newResume);
-        fs.writeFile(dataFilename, JSON.stringify(obj), err => {
-          if (err) {
-            res.status(500).send("Problem writing data, no changes made");
-          } else {
-            res.status(200).json(newResume);
-          }
-        })
-      }
-    });
-    release();
-  });
-})
+postObject(app, 'resumes');
 
-app.delete('/resumes/:id', (req: Request, res: Response) => {
-  lock.writeLock((release) => {
-    fs.readFile(dataFilename, 'utf-8', (err, data) => {
-      if (err) {
-        console.error(err);
-        res.status(500).send("Problem writing data, nothing was deleted");
-      } else {
-        let obj : { resumes: any[] } = JSON.parse(data);
-        let index = obj.resumes.findIndex((e : any) => e.id == req.params.id);
-        if (index >= 0) {
-          const deletedItem = obj.resumes[index];
-          obj.resumes = [
-            ...obj.resumes.slice(0, index),
-            ...obj.resumes.slice(index + 1)
-          ]
-          fs.writeFile(dataFilename, JSON.stringify(obj), err => {
-            if (err) {
-              res.status(500).send("Problem writing data, nothing was deleted");
-            } else {
-              res.status(200).json(deletedItem);
-            }
-          })
-        } else {
-          res.status(500).send("Problem writing data, nothing was deleted");
-        }
-      }
-    });
-    release();
-  });
-})
+deleteObjectByProperty(app, 'resumes', 'id');
 
-app.post('/experiences', (req: Request, res: Response) => {
-  const newExperience = req.body;
-  lock.writeLock((release) => {
-    fs.readFile(dataFilename, 'utf-8', (err, data) => {
-      if (err) {
-        console.error(err);
-        res.status(500).send("Problem writing data, no changes made");
-      } else {
-        let obj : { experiences: any[] } = JSON.parse(data);
-        obj.experiences.push(newExperience);
-        fs.writeFile(dataFilename, JSON.stringify(obj), err => {
-          if (err) {
-            res.status(500).send("Problem writing data, no changes made");
-          } else {
-            res.status(200).json(newExperience);
-          }
-        })
-      }
-    });
-    release();
-  });
-})
+postObject(app, 'experiences');
 
-app.put('/experiences/:id', (req: Request, res: Response) => {
-  const newExperience = req.body;
-  lock.writeLock((release) => {
-    fs.readFile(dataFilename, 'utf-8', (err, data) => {
-      if (err) {
-        console.error(err);
-        res.status(500).send("Problem writing data, no changes made");
-      } else {
-        let obj : { experiences: any[] } = JSON.parse(data);
-        let index = obj.experiences.findIndex((e : any) => e.id == req.params.id);
-        if (index >= 0) {
-          obj.experiences[index] = newExperience;
-          fs.writeFile(dataFilename, JSON.stringify(obj), err => {
-            if (err) {
-              res.status(500).send("Problem writing data, no changes made");
-            } else {
-              res.status(200).json(newExperience);
-            }
-          })
-        } else {
-          res.status(500).send("Problem writing data, no changes made");
-        }
-      }
-    });
-    release();
-  });
-})
+putObjectByProperty(app, 'experiences', 'id');
 
-app.delete('/experiences/:id', (req: Request, res: Response) => {
-  lock.writeLock((release) => {
-    fs.readFile(dataFilename, 'utf-8', (err, data) => {
-      if (err) {
-        console.error(err);
-        res.status(500).send("Problem writing data, nothing was deleted");
-      } else {
-        let obj : { experiences: any[] } = JSON.parse(data);
-        let index = obj.experiences.findIndex((e : any) => e.id == req.params.id);
-        if (index >= 0) {
-          const deletedItem = obj.experiences[index];
-          obj.experiences = [
-            ...obj.experiences.slice(0, index),
-            ...obj.experiences.slice(index + 1)
-          ]
-          fs.writeFile(dataFilename, JSON.stringify(obj), err => {
-            if (err) {
-              res.status(500).send("Problem writing data, nothing was deleted");
-            } else {
-              res.status(200).json(deletedItem);
-            }
-          })
-        } else {
-          res.status(500).send("Problem writing data, nothing was deleted");
-        }
-      }
-    });
-    release();
-  });
-})
+deleteObjectByProperty(app, 'experiences', 'id');
 
-app.post('/contacts', (req: Request, res: Response) => {
-  const newContact = req.body;
-  lock.writeLock((release) => {
-    fs.readFile(dataFilename, 'utf-8', (err, data) => {
-      if (err) {
-        console.error(err);
-        res.status(500).send("Problem writing data, no changes made");
-      } else {
-        let obj : { contacts: any[] } = JSON.parse(data);
-        if (obj.contacts.some(cur => cur.name == newContact.name)) {
-          res.status(400).send(`${newContact.name} contact already exists`);
-          return;
-        }
-        obj.contacts.push(newContact);
-        fs.writeFile(dataFilename, JSON.stringify(obj), err => {
-          if (err) {
-            res.status(500).send("Problem writing data, no changes made");
-          } else {
-            res.status(200).json(newContact);
-          }
-        })
-      }
-    });
-    release();
-  });
-})
+postObjectNoDuplicates(app, "contacts", (a, b) => a.name == b.name);
 
-app.delete('/contacts/:name', (req: Request, res: Response) => {
-  lock.writeLock((release) => {
-    fs.readFile(dataFilename, 'utf-8', (err, data) => {
-      if (err) {
-        console.error(err);
-        res.status(500).send("Problem writing data, nothing was deleted");
-      } else {
-        let obj : { contacts: any[] } = JSON.parse(data);
-        let index = obj.contacts.findIndex(
-          (cur : any) => cur.name == req.params.name
-        );
-        if (index >= 0) {
-          const deletedItem = obj.contacts[index];
-          obj.contacts = [
-            ...obj.contacts.slice(0, index),
-            ...obj.contacts.slice(index + 1)
-          ]
-          fs.writeFile(dataFilename, JSON.stringify(obj), err => {
-            if (err) {
-              res.status(500).send("Problem writing data, nothing was deleted");
-            } else {
-              res.status(200).json(deletedItem);
-            }
-          })
-        } else {
-          res.status(500).send("Problem writing data, nothing was deleted");
-        }
-      }
-    });
-    release();
-  });
-})
+deleteObjectByProperty(app, 'contacts', 'name');
 
-app.post('/skillLists', (req : Request, res : Response) => {
-  const newSkillList = req.body;
-  lock.writeLock((release) => {
-    fs.readFile(dataFilename, 'utf-8', (err, data) => {
-      if (err) {
-        console.error(err);
-        res.status(500).send("Problem writing data, no changes made");
-      } else {
-        let obj : { skills : any[] } = JSON.parse(data);
-        if (obj.skills.some(cur => cur.name == newSkillList.name)) {
-          res.status(400).send(`Skill list ${newSkillList.name} already exists`);
-          return;
-        }
-        obj.skills.push(newSkillList);
-        fs.writeFile(dataFilename, JSON.stringify(obj), err => {
-          if (err) {
-            res.status(500).send("Problem writing data, no changes made");
-          } else {
-            res.status(200).json(newSkillList);
-          }
-        })
-      }
-    });
-    release();
-  });
-})
+postObjectNoDuplicates(app, "skillLists", (a, b) => a.name == b.name);
 
-app.put('/skillLists/:name', (req : Request, res : Response) => {
-  const newSkillList = req.body;
-  lock.writeLock((release) => {
-    fs.readFile(dataFilename, 'utf-8', (err, data) => {
-      if (err) {
-        console.error(err);
-        res.status(500).send("Problem writing data, no changes made");
-      } else {
-        let obj : { skills : any[] } = JSON.parse(data);
-        const index = obj.skills.findIndex(cur => cur.name == req.params.name);
-        obj.skills[index] = newSkillList;
-        fs.writeFile(dataFilename, JSON.stringify(obj), err => {
-          if (err) {
-            res.status(500).send("Problem writing data, no changes made");
-          } else {
-            res.status(200).json(newSkillList);
-          }
-        })
-      }
-    });
-    release();
-  });
-})
+putObjectByProperty(app, 'skillLists', 'name');
 
-app.delete('/skillLists/:name', (req : Request, res : Response) => {
-  lock.writeLock((release) => {
-    fs.readFile(dataFilename, 'utf-8', (err, data) => {
-      if (err) {
-        console.error(err);
-        res.status(500).send("Problem writing data, nothing was deleted");
-      } else {
-        let obj : { skills: any[] } = JSON.parse(data);
-        let index = obj.skills.findIndex((e : any) => e.name == req.params.name);
-        if (index >= 0) {
-          const deletedItem = obj.skills[index];
-          obj.skills = [
-            ...obj.skills.slice(0, index),
-            ...obj.skills.slice(index + 1)
-          ]
-          fs.writeFile(dataFilename, JSON.stringify(obj), err => {
-            if (err) {
-              res.status(500).send("Problem writing data, nothing was deleted");
-            } else {
-              res.status(200).json(deletedItem);
-            }
-          })
-        } else {
-          res.status(500).send("Problem writing data, nothing was deleted");
-        }
-      }
-    });
-    release();
-  });
-})
+deleteObjectByProperty(app, 'skillLists', 'name');
 
-app.post('/references', (req: Request, res: Response) => {
-  lock.writeLock((release) => {
-    const newReference = req.body;
-    fs.readFile(dataFilename, 'utf-8', (err, data) => {
-      if (err) {
-        console.error(err);
-        res.status(500).send("Problem writing data, no changes made");
-      } else {
-        let obj : { references: any[] } = JSON.parse(data);
-        if (obj.references.some(cur => cur.name == newReference.name)) {
-          res.status(400).send(`A reference from ${newReference.name} already exists`);
-          return;
-        }
-        obj.references.push(newReference);
-        fs.writeFile(dataFilename, JSON.stringify(obj), err => {
-          if (err) {
-            res.status(500).send("Problem writing data, no changes made");
-          } else {
-            res.status(200).json(newReference);
-          }
-        })
-      }
-    });
-    release();
-  });
-})
+postObjectNoDuplicates(app, "references", (a, b) => a.name == b.name);
 
-app.delete('/references/:name', (req: Request, res: Response) => {
-  lock.writeLock((release) => {
-    fs.readFile(dataFilename, 'utf-8', (err, data) => {
-      if (err) {
-        console.error(err);
-        res.status(500).send("Problem writing data, nothing was deleted");
-      } else {
-        let obj : { references: any[] } = JSON.parse(data);
-        let index = obj.references.findIndex(cur => cur.name == req.params.name);
-        if (index >= 0) {
-          const deletedItem = obj.references[index];
-          obj.references = [
-            ...obj.references.slice(0, index),
-            ...obj.references.slice(index + 1)
-          ]
-          fs.writeFile(dataFilename, JSON.stringify(obj), err => {
-            if (err) {
-              res.status(500).send("Problem writing data, nothing was deleted");
-            } else {
-              res.status(200).json(deletedItem);
-            }
-          })
-        } else {
-          res.status(500).send("Problem writing data, nothing was deleted");
-        }
-      }
-    });
-    release();
-  });
-})
+deleteObjectByProperty(app, 'references', 'name');
 
 app.listen(port, () => {
   console.log(`Server running at https://localhost:${port}`);
