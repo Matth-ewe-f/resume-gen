@@ -16,35 +16,48 @@ const dataFilename = processArgs();
 const port = 3300;
 const lock = new ReadWriteLock();
 
+const emptyData = { defaultName:"", defaultTagline:"", resumes:[], experiences:[], contacts:[], defaultEducation:"", skillLists:[], references:[] }
+
 const app : Express = express();
 app.use(cors<Request>());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 
-const writeToFile = (changes: (obj : any) => [any, any]) => {
+const readFromFile = () => {
+  return new Promise((resolve, reject) => {
+    fs.readFile(dataFilename, 'utf-8', (err, data) => {
+      if (err) {
+        if (err.code == 'ENOENT') {
+          resolve(structuredClone(emptyData));
+        } else {
+          reject(err);
+        }
+      } else {
+        resolve(JSON.parse(data));
+      }
+    })
+  })
+}
+
+const writeChanges = (changes: (obj : any) => [any, any]) => {
   return new Promise((resolve, reject) => {
     lock.writeLock((release) => {
-      fs.readFile(dataFilename, 'utf-8', (err, data) => {
-        if (err) {
+      readFromFile().then((data : any) => {
+        let [obj, response] = changes(data);
+        if (obj == false) {
           release();
-          reject();
-        } else {
-          let [obj, response] = changes(JSON.parse(data));
-          if (obj == false) {
-            release();
-            resolve(false);
-            return;
-          }
-          fs.writeFile(dataFilename, JSON.stringify(obj), err => {
-            if (err) {
-              release();
-              reject();
-            } else {
-              release();
-              resolve(response);
-            }
-          })
+          resolve(false);
+          return;
         }
+        fs.writeFile(dataFilename, JSON.stringify(obj), err => {
+          if (err) {
+            release();
+            reject();
+          } else {
+            release();
+            resolve(response);
+          }
+        })
       })
     })
   })
@@ -53,7 +66,7 @@ const writeToFile = (changes: (obj : any) => [any, any]) => {
 
 const putField = (app : Express, route : string, valueName : string) => {
   app.put(`/${route}`, (req: Request, res: Response) => {
-    writeToFile(obj => {
+    writeChanges(obj => {
       obj[route] = req.body[valueName];
       return [obj, req.body];
     }).then(response => {
@@ -72,7 +85,7 @@ const postObjectNoDuplicates =
 (app: Express, route: string, equalityCheck: (a: any, b: any) => boolean) => {
   app.post(`/${route}`, (req: Request, res: Response) => {
     const body = req.body;
-    writeToFile(obj => {
+    writeChanges(obj => {
       if (obj[route].some((cur : any) => equalityCheck(cur, body))) {
         return [false, false];
       }
@@ -94,7 +107,7 @@ const postObjectNoDuplicates =
 const deleteObjectByProperty =
 (app : Express, route : string, property : string) => {
   app.delete(`/${route}/:${property}`, (req: Request, res: Response) => {
-    writeToFile(obj => {
+    writeChanges(obj => {
       let index = obj[route].findIndex(
         (e : any) => e[property] == req.params[property]
       );
@@ -120,7 +133,7 @@ const putObjectByProperty =
 (app : Express, route : string, property : string) => {
   app.put(`/${route}/:${property}`, (req: Request, res: Response) => {
     const body = req.body;
-    writeToFile(obj => {
+    writeChanges(obj => {
       let index = obj[route].findIndex(
         (e : any) => e[property] == req.params[property]
       );
@@ -144,17 +157,14 @@ const putObjectByProperty =
 
 app.get('/allData', (req: Request, res: Response) => {
   lock.readLock((release) => {
-    fs.readFile(dataFilename, 'utf-8', (err, data) => {
-      if (err) {
-        console.error(err);
-        res.status(500).send("Problem reading data files");
-        release();
-      } else {
-        let obj = JSON.parse(data);
-        delete obj.resumes;
-        res.status(200).json(obj);
-        release();
-      }
+    readFromFile().then((data : any) => {
+      delete data.resumes;
+      res.status(200).json(data);
+      release();
+    }).catch(err => {
+      console.error(err);
+      res.status(500).send("Problem reading data files");
+      release();
     })
   })
 });
@@ -167,16 +177,13 @@ putField(app, 'defaultEducation', 'newEducation');
 
 app.get('/resumes', (req: Request, res: Response) => {
   lock.readLock((release) => {
-    fs.readFile(dataFilename, 'utf-8', (err, data) => {
-      if (err) {
-        console.error(err);
-        res.status(500).send("Problem reading data files");
-        release();
-      } else {
-        let obj = JSON.parse(data);
-        res.status(200).json({ resumes: obj.resumes });
-        release();
-      }
+    readFromFile().then((data : any) => {
+      res.status(200).json({ resumes: data.resumes });
+      release();
+    }).catch(err => {
+      console.error(err);
+      res.status(500).send("Problem reading data files");
+      release();
     });
   });
 })
