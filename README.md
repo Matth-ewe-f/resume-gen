@@ -17,7 +17,7 @@ Resumemory was created by Matthew Flynn to assist in his post-graduation job sea
 
 2. Clone this repository with
 
-    `git clone https://github.com/Matth-ewe-f/resume-gen`
+    `git clone https://github.com/Matth-ewe-f/resumemory`
 
 3. Install dependencies by running in the root folder
 
