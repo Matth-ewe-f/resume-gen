@@ -1,10 +1,10 @@
-# Title
-Create perfectly tailored resumes for any job in minutes. See the [Installation Guide](#installation-guide) to get started.
+# Resumemory
+Keep everything you've ever written about yourself right at your fingertips, and create perfectly tailored resumes for any job in minutes. See the [Installation Guide](#installation-guide) to get started.
 
 ## Description
-*title* allows you to easily create dozens of resumes tailored to a myriad of diverse job positions. Text that you write for one resume is saved, and can be added to another resume in a single click. Individual bullet points under any heading can be toggled on and off, allowing you to highlight exactly what you want about your experiences. Past resumes can be saved, duplicated, edited, and redownloaded, so you'll never have to wrack your brain to remember how you phrased that *one bullet point* you deleted even though it was *just perfect*.
+Resumemory allows you to easily create dozens of resumes tailored to a myriad of diverse job positions. Any text that you write for one resume is saved, and can be added to another resume in a single click. Individual bullet points under any heading can be added and toggled on and off, allowing you to highlight exactly what you want about your experiences. Past resumes can be saved, duplicated, edited, and redownloaded, so you'll never have to wrack your brain to remember how you phrased that *one bullet point* you deleted even though it was *just perfect*.
 
-*title* was created by Matthew Flynn to assist in his post-graduation job search. At its inception it was meant to be a simple personal project, and so this public-facing version is still a work in progress. See [Limitations](#current-limitations) for more details.
+Resumemory was created by Matthew Flynn to assist in his post-graduation job search. At its inception it was meant to be a simple personal project, and so this public-facing version is still a work in progress. See [Limitations](#current-limitations) for more details.
 
 ## Built With
 * [Next.js](https://nextjs.org/)
@@ -53,7 +53,7 @@ Create perfectly tailored resumes for any job in minutes. See the [Installation 
     * The ability to add new sections may be implemented. This would be a significant undertaking because there would need to be a lot of flexibility in what types of sections can be added in order for this featuer to be useful. This would make the UI to build these sections difficult to build.
 
 ### Deployment
-* There is no deployed version of this application. Because *title* began as a personal project, it was easy for me to use the app by running it locally and writing data to a JSON file on my disk.
+* There is no deployed version of this application. Because Resumemory began as a personal project, it was easy for me to use the app by running it locally and writing data to a JSON file on my disk.
 * Future Solutions: 
    * There are currently no plans to create a deployed version of the app. A deployed version would require a real database, and therefore would restrict users to only using the application when connected to the internet.
    * A "Screenshots and Videos" section may be added to this README so that prospective users can see the app without installing it.
