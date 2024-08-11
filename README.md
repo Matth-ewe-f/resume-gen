@@ -2,7 +2,7 @@
 Keep everything you've ever written about yourself right at your fingertips, and create perfectly tailored resumes for any job in minutes. See the [Installation Guide](#installation-guide) to get started.
 
 ## Description
-Resumemory allows you to easily create dozens of resumes tailored to a myriad of diverse job positions. Any text that you write for one resume is saved, and can be added to another resume in a single click. Individual bullet points under any heading can be added and toggled on and off, allowing you to highlight exactly what you want about your experiences. Past resumes can be saved, duplicated, edited, and redownloaded, so you'll never have to wrack your brain to remember how you phrased that *one bullet point* you deleted even though it was *just perfect*.
+Resumemory allows you to easily create and maintain dozens of resumes tailored to a myriad of diverse job positions. Any text that you write for one resume is saved, and can be added to another resume in a single click. Individual bullet points under any heading can be added and toggled on and off, allowing you to highlight exactly what you want about your experiences. Past resumes can be saved, duplicated, edited, and redownloaded, so you'll never have to wrack your brain to remember how you phrased that *one bullet point* you deleted even though it was *just perfect*.
 
 Resumemory was created by Matthew Flynn to assist in his post-graduation job search. At its inception it was meant to be a simple personal project, and so this public-facing version is still a work in progress. See [Limitations](#current-limitations) for more details.
 
