@@ -1,23 +1,23 @@
 {
-  "name": "resume-gen",
+  "name": "resumemory",
   "version": "1.0.0",
   "scripts": {
     "install": "concurrently \"cd client && npm i\" \"cd server && npm i\"",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "concurrently \"cd client && npm run dev\" \"cd server && npm run dev\"",
+    "dev": "concurrently -P \"cd client && npm run dev\" \"cd server && npm run dev -- {@}\"",
     "build": "concurrently \"cd client && npm run build\" \"cd server && npm run build\"",
-    "start": "concurrently \"cd client && npm run start\" \"cd server && npm run start\""
+    "start": "concurrently -P \"cd client && npm run start\" \"cd server && npm run start -- {@}\""
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Matth-ewe-f/resume-gen.git"
+    "url": "git+https://github.com/Matth-ewe-f/resumemory"
   },
   "author": "Matthew Flynn",
-  "license": "ISC",
+  "license": "MIT",
   "bugs": {
-    "url": "https://github.com/Matth-ewe-f/resume-gen/issues"
+    "url": "https://github.com/Matth-ewe-f/resumemory/issues"
   },
-  "homepage": "https://github.com/Matth-ewe-f/resume-gen#readme",
+  "homepage": "https://github.com/Matth-ewe-f/resumemory#readme",
   "devDependencies": {
     "concurrently": "^8.2.2"
   }

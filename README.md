@@ -29,6 +29,8 @@ Resumemory was created by Matthew Flynn to assist in his post-graduation job sea
 
     `npm run start`
 
+    * Or, you can run `npm run start -- -- demoData.json` to populate the application with demo data from some of Matthew Flynn's resumes
+
 5. Visit `localhost:3000` in your browser to see the application running
 
 ## Current Limitations
