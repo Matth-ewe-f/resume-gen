@@ -169,7 +169,7 @@ const ExperiencePopup : FC<props> = (props) => {
   return (
     <div className="fixed top-0 p-16 w-screen h-screen flex items-center
     justify-center bg-white bg-opacity-70">
-      <div className="w-[640px] px-6 py-4 bg-stone-300 rounded-2xl shadow-lg">
+      <div className="w-[670px] px-6 py-4 bg-stone-300 rounded-2xl shadow-lg">
         <div className="flex flex-row items-center justify-between">
           <h3 className="text-xl font-grotesk uppercase tracking-ultra">
             { isNewItem ? "Create New Item" : "Edit Item"}

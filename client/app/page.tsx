@@ -872,6 +872,35 @@ const Page : FC = () => {
       showPopup("experience");
     }
 
+    const processMdSubset = (text : string) => {
+      const processLink = (text : string) => {
+        let jsx : (JSX.Element | string)[] = [];
+        const linkRegex = /\[.+?\]\(.+?\)/;
+        let match = text.match(linkRegex);
+        while (match) {
+          const link = match[0];
+          jsx.push(text.substring(0, match.index));
+          jsx.push(
+            <a href={link.split(/[\(\)]/)[1]} className="underline">
+              {link.substring(1, link.indexOf("]"))}
+            </a>
+          );
+          text = text.substring((match.index || 0) + link.length);
+          match = text.match(linkRegex);
+        }
+        jsx.push(text);
+        return jsx;
+      }
+
+      return text.split("**").map((piece, index) => {
+        if (index % 2 == 0) {
+          return processLink(piece);
+        } else {
+          return <span className="font-bold">{processLink(piece)}</span>
+        }
+      })
+    }
+
     return (
       <button 
         key={`right-col-${index}`}
@@ -881,21 +910,21 @@ const Page : FC = () => {
         <div className="text-left leading-tight">
           <div className="flex flex-row justify-between items-end">
             <h3 className="flex-grow font-semibold text-sm max-w-96">
-              { experience.title }
+              { processMdSubset(experience.title) }
             </h3>
             <span className="text-right text-mini">
               { experience.dates }
             </span>
           </div>
           <span className="relative -top-[5px] w-full text-mini">
-            { experience.subtitle }
+            { processMdSubset(experience.subtitle) }
           </span>
           <ul className="-mt-1.5 ml-4 text-mini list-disc text-justify">
             {experience.bullets.map((bullet, j) => {
               if (bullet.shown) {
                 return (
                   <li key={`bullet-${index}-${j}`}>
-                    {bullet.text}
+                    {processMdSubset(bullet.text)}
                   </li>
                 )
               }

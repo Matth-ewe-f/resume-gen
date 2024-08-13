@@ -73,6 +73,23 @@ const RightColBuilder : FC<props> = (props) => {
     updateItems(newColumn);
   }
 
+  const processSubtitle = (text : string) => {
+    let regex = /\[.+\]\(.+\)/;
+    let match = text.match(regex);
+    while (match) {
+      const part1 = text.substring(0, match.index);
+      const part2 = match[0].substring(1, match[0].indexOf("]"));
+      const part3 = text.substring((match.index || 0) + match[0].length);
+      text = part1 + part2 + part3;
+      match = text.match(regex);
+    }
+    const parenIndex = text.indexOf("(");
+    if (parenIndex != -1) {
+      text = text.substring(0, parenIndex);
+    }
+    return text;
+  }
+
   const generateVisibleRightBuilderItem =
   (item : rightColumnItem, indexInVisible : number) => {
 
@@ -82,11 +99,11 @@ const RightColBuilder : FC<props> = (props) => {
       updateItems(newColumn);
     }
 
-    const ChevronUpClick = () => { 
+    const chevronUpClick = () => { 
       switchRightColumnItems(indexInVisible, indexInVisible - 1)
     };
 
-    const ChevronDownClick = () => {
+    const chevronDownClick = () => {
       switchRightColumnItems(indexInVisible, indexInVisible + 1)
     };
     
@@ -105,10 +122,10 @@ const RightColBuilder : FC<props> = (props) => {
             />
           </div>
           <div className="flex items-center">
-            <button onClick={ ChevronUpClick }>
+            <button onClick={ chevronUpClick }>
               <ChevronUp size={20}/>
             </button>
-            <button onClick={ ChevronDownClick }>
+            <button onClick={ chevronDownClick }>
               <ChevronDown size={20}/>
             </button>
           </div>
@@ -122,14 +139,14 @@ const RightColBuilder : FC<props> = (props) => {
               <SquareCheckBig size={16}/>
             </button>
             <h5 className="max-w-48 truncate">
-              { (item as experience).subtitle }
+              { processSubtitle((item as experience).subtitle) }
             </h5>
           </div>
           <div className="flex items-center">
-            <button onClick={ ChevronUpClick }>
+            <button onClick={ chevronUpClick }>
               <ChevronUp size={20}/>
             </button>
-            <button onClick={ ChevronDownClick }>
+            <button onClick={ chevronDownClick }>
               <ChevronDown size={20}/>
             </button>
           </div>
@@ -148,7 +165,7 @@ const RightColBuilder : FC<props> = (props) => {
             <Square size={16}/>
           </button>
           <h5 className="max-w-48 truncate">
-            {item.subtitle}
+            {processSubtitle(item.subtitle)}
           </h5>
         </div>
         <div className="min-w-10"/>
