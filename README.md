@@ -1,4 +1,4 @@
-# Resumemory
+# <img src=client/app/favicon.ico alt=icon height=36 style="float:right"> Resumemory
 Keep everything you've ever written about yourself right at your fingertips, and create perfectly tailored resumes for any job in minutes. See the [Installation Guide](#installation-guide) to get started.
 
 ## Description
