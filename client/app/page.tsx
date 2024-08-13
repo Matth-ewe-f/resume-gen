@@ -1,5 +1,5 @@
 "use client";
-import { Github, LinkedinIcon, Mail, MousePointer, Music, Phone, Square } from "lucide-react";
+import { Github, House, LinkedinIcon, Mail, MousePointer, Music, Phone, Square } from "lucide-react";
 import { FC, useEffect, useRef, useState } from "react";
 import axios from "axios";
 import ContactPopup from "@/components/ContactPopup";
@@ -118,6 +118,8 @@ const Page : FC = () => {
       );
     } else if (type == "github") {
       return <FaGithub/>
+    } else if (type == "address") {
+      return <House className={className} size={16} strokeWidth={1}/>
     } else {
       return <Square className={className} size={16} strokeWidth={1}/>;
     }
