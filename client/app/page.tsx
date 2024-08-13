@@ -1,5 +1,5 @@
 "use client";
-import { Github, House, LinkedinIcon, Mail, MousePointer, Music, Phone, Square } from "lucide-react";
+import { House, LinkedinIcon, Mail, MousePointer, Music, Phone, Square } from "lucide-react";
 import { FC, useEffect, useRef, useState } from "react";
 import axios from "axios";
 import ContactPopup from "@/components/ContactPopup";
@@ -473,7 +473,7 @@ const Page : FC = () => {
         rightColumn: savedRightCol,
         contacts: savedContacts,
         education: educationText,
-        skills: savedSkills,
+        skillLists: savedSkills,
         references: savedReferences,
         dateSaved: new Date().toISOString()
       }
@@ -533,7 +533,6 @@ const Page : FC = () => {
           return cur;
         })
       );
-      console.log(selected.rightColumn);
       selected.contacts = selected.contacts.map(cur => {
         cur.shown = true;
         return cur;
@@ -546,7 +545,7 @@ const Page : FC = () => {
           return cur;
         })
       );
-      selected.skills = selected.skills.map(cur => {
+      selected.skillLists = selected.skillLists.map(cur => {
         cur.shown = true;
         cur.items = cur.items.map(item => {
           item.shown = true;
@@ -565,9 +564,9 @@ const Page : FC = () => {
         }
         return cur;
       })
-      selected.skills.push(
+      selected.skillLists.push(
         ...skills.filter(cur => 
-          !selected.skills.some(s => s.name == cur.name)
+          !selected.skillLists.some(s => s.name == cur.name)
         ).map(cur => {
           cur.shown = false;
           return cur;
@@ -588,7 +587,7 @@ const Page : FC = () => {
       setRightColumn(selected.rightColumn);
       setContacts(selected.contacts);
       setEducationText(selected.education);
-      setSkills(selected.skills);
+      setSkills(selected.skillLists);
       setReferences(selected.references);
       showPopup("");
     }

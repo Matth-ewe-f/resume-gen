@@ -4,7 +4,7 @@ type resume = {
   rightColumn: rightColumnItem[],
   contacts: contact[],
   education: string,
-  skills: skillList[],
+  skillLists: skillList[],
   references: reference[],
   dateSaved: string,
 }
