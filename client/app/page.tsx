@@ -418,7 +418,7 @@ const Page : FC = () => {
   }
 
   const generateSavePopup = () => {
-    const onSave = (name : string) => {
+    const onSave = (resumeName : string) => {
       let savedRightCol : rightColumnItem[] = [];
       let index = 0;
       while (index < rightColumn.length &&
@@ -469,7 +469,9 @@ const Page : FC = () => {
       })
       const body : resume = {
         id: v4(),
-        name: name,
+        name: resumeName,
+        headerName: name,
+        tagline: tagline,
         rightColumn: savedRightCol,
         contacts: savedContacts,
         education: educationText,
@@ -584,6 +586,8 @@ const Page : FC = () => {
           return cur;
         })
       )
+      setName(selected.headerName);
+      setTagline(selected.tagline);
       setRightColumn(selected.rightColumn);
       setContacts(selected.contacts);
       setEducationText(selected.education);

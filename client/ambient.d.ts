@@ -1,6 +1,8 @@
 type resume = {
   id: string,
-  name: name,
+  name: string,
+  headerName: string,
+  tagline: string,
   rightColumn: rightColumnItem[],
   contacts: contact[],
   education: string,
