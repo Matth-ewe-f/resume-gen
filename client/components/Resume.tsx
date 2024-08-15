@@ -315,11 +315,13 @@ const Resume : FC<props> = (props) => {
               { generateEducationSection() }
               <hr className="mt-4 mb-3 mr-8 border-dashed border-t border-stone-600"/>
               { generateSkillsSection() }
-              <hr className="mt-4 mr-8 border-dashed border-t border-stone-600"/>
             </div>
-            <div className="pl-[3.5rem] bg-stone-100">
-              { generateReferencesSection() }
-            </div>
+            { props.references.some(r => r.shown) &&
+                <div className="pl-[3.5rem] bg-stone-100">
+                  <hr className="mr-8 ml-4 border-dashed border-t border-stone-600"/>
+                  { generateReferencesSection() }
+                </div>
+            }
             <div className="flex-grow bg-stone-100 min-h-4"/>
           </div>
           <div className="flex-grow pl-6 pr-20 pt-2 pb-2">
