@@ -1,8 +1,9 @@
 import axios from "axios";
 import { ChevronDown, ChevronUp, SquareCheckBig, Square, X, Plus } from "lucide-react";
-import { useState } from "react";
 
 type props<T extends leftColumnItem> = {
+  open: boolean,
+  setOpen: (b : boolean) => void ,
   allItems : T[],
   updateItems : (items : T[]) => void,
   onAddItem : () => void,
@@ -13,9 +14,11 @@ type props<T extends leftColumnItem> = {
 }
 
 const LeftSectionBuilder = <T extends leftColumnItem,>(props : props<T>) => {
+  console.log(props.open);
+  const open = props.open;
+  const setOpen = props.setOpen;
   const allItems = props.allItems;
   const updateItems = props.updateItems;
-  const [open, setOpen] = useState(false);
 
   const capitalize = (s : string) => {
     return s.split(' ').map(
@@ -78,7 +81,7 @@ const LeftSectionBuilder = <T extends leftColumnItem,>(props : props<T>) => {
         tracking-ultra">
           { props.heading }
         </h3>
-        <button onClick={ () => setOpen(a => !a)}>
+        <button onClick={ () => setOpen(!open)}>
           { open ? <ChevronDown size={24}/> : <ChevronUp size={24}/> }
         </button>
       </div>

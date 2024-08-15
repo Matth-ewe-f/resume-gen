@@ -1,4 +1,4 @@
-import { FC } from "react";
+import { FC, useState } from "react";
 import LeftSectionBuilder from "./LeftSectionBuilder";
 
 type props = {
@@ -15,12 +15,42 @@ type props = {
 }
 
 const LeftColBuilder : FC<props> = (props) => {
+  const [contactsOpen, setContactsOpen] = useState(false);
+  const [skillsOpen, setSkillsOpen] = useState(false);
+  const [referencessOpen, setReferencesOpen] = useState(false);
+
+  const setContactsOpenWrap = (b : boolean) => {
+    if (b) {
+      setSkillsOpen(false);
+      setReferencesOpen(false);
+    }
+    setContactsOpen(b);
+  }
+
+  const setSkillsOpenWrap = (b : boolean) => {
+    if (b) {
+      setContactsOpen(false);
+      setReferencesOpen(false);
+    }
+    setSkillsOpen(b);
+  }
+
+  const setReferencesOpenWrap = (b : boolean) => {
+    if (b) {
+      setContactsOpen(false);
+      setSkillsOpen(false);
+    }
+    setReferencesOpen(b);
+  }
+
   return (
     <div 
       className={"fixed top-32 flex flex-col gap-y-6 w-72 transition-all "
       + `duration-500 ${props.show ? '-left-5' : '-left-72'}`}
     >
       <LeftSectionBuilder
+        open={contactsOpen}
+        setOpen={setContactsOpenWrap}
         allItems={props.contacts}
         updateItems={props.updateContacts}
         onAddItem={props.onAddContact}
@@ -30,6 +60,8 @@ const LeftColBuilder : FC<props> = (props) => {
         deleteRoute="contacts"
       />
       <LeftSectionBuilder
+        open={skillsOpen}
+        setOpen={setSkillsOpenWrap}
         allItems={props.skills}
         updateItems={props.updateSkills}
         onAddItem={props.onAddSkill}
@@ -39,6 +71,8 @@ const LeftColBuilder : FC<props> = (props) => {
         deleteRoute="skillLists"
       />
       <LeftSectionBuilder
+        open={referencessOpen}
+        setOpen={setReferencesOpenWrap}
         allItems={props.references}
         updateItems={props.updateReferences}
         onAddItem={props.onAddReference}
