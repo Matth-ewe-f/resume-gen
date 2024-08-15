@@ -85,27 +85,29 @@ const Resume : FC<props> = (props) => {
   }
 
   const generateEducationSection = () => {
-    return <>
-      <h5 className="my-2 text font-grotesk font-medium uppercase
-      tracking-ultra">
-        Education
-      </h5>
-      { props.education != "" &&
-        <div className="text-mini leading-tight">
-          { props.education.split("\n").map(line => {
-            return <p className="min-h-2">
-              {line.split("**").map((piece, index) => {
-                if (index % 2 == 0) {
-                  return piece;
-                } else {
-                  return <span className="font-bold">{piece}</span>
-                }
-              })}
-            </p>
-          }) }
-        </div>
-      }
-    </>
+    return (
+      <button onClick={() => showPopup("education")} className="text-left">
+        <h5 className="mb-2 text font-grotesk font-medium uppercase
+        tracking-ultra">
+          Education
+        </h5>
+        { props.education != "" &&
+          <div className="text-left text-mini leading-tight">
+            { props.education.split("\n").map(line => {
+              return <p className="min-h-2">
+                {line.split("**").map((piece, index) => {
+                  if (index % 2 == 0) {
+                    return piece;
+                  } else {
+                    return <span className="font-bold">{piece}</span>
+                  }
+                })}
+              </p>
+            }) }
+          </div>
+        }
+      </button>
+    );
   }
 
   const generateSkillsSection = () => {

@@ -363,7 +363,6 @@ const Page : FC = () => {
   const generateLeftColumnBuilder = () => {
     return <LeftColBuilder
       show={widgets}
-      onEditEducation={() => showPopup("education")}
       contacts={contacts}
       updateContacts={setContacts}
       onAddContact={ () => showPopup("contact") }
