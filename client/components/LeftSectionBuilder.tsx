@@ -6,15 +6,14 @@ type props<T extends leftColumnItem> = {
   setOpen: (b : boolean) => void ,
   allItems : T[],
   updateItems : (items : T[]) => void,
-  onAddItem : () => void,
+  onAddItem? : () => void,
   heading: string,
-  addText: string,
-  deleteText: string,
-  deleteRoute: string,
+  addText?: string,
+  deleteText?: string,
+  deleteRoute?: string,
 }
 
 const LeftSectionBuilder = <T extends leftColumnItem,>(props : props<T>) => {
-  console.log(props.open);
   const open = props.open;
   const setOpen = props.setOpen;
   const allItems = props.allItems;
@@ -27,7 +26,9 @@ const LeftSectionBuilder = <T extends leftColumnItem,>(props : props<T>) => {
   }
 
   const addItem = () => {
-    props.onAddItem();
+    if (props.onAddItem) {
+      props.onAddItem();
+    }
   }
 
   const deleteItem = (item : T) => {
@@ -112,17 +113,21 @@ const LeftSectionBuilder = <T extends leftColumnItem,>(props : props<T>) => {
                 <button onClick={() => swapItems(index, index + 1)}>
                   <ChevronDown size={16}/>
                 </button>
-                <button onClick={() => deleteItem(item)}>
-                  <X size={16} className="text-red-600"/>
-                </button>
+                { (props.deleteRoute && props.deleteText) != undefined &&
+                  <button onClick={() => deleteItem(item)}>
+                    <X size={16} className="text-red-600"/>
+                  </button>
+                }
               </div>
             </div>
           )
         })}
-        <button className="flex items-center gap-x-1" onClick={addItem}>
-          <Plus size={16} className="text-stone-500 mr-1"/>
-          <span className="text-stone-500">{props.addText}</span>
-        </button>
+        { (props.onAddItem && props.addText) != undefined && 
+          <button className="flex items-center gap-x-1" onClick={addItem}>
+            <Plus size={16} className="text-stone-500 mr-1"/>
+            <span className="text-stone-500">{props.addText}</span>
+          </button>
+        }
       </div>
     </div>
   )

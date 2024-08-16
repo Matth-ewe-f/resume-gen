@@ -3,6 +3,8 @@ import LeftSectionBuilder from "./LeftSectionBuilder";
 
 type props = {
   show : boolean
+  sections: leftColumnSection[],
+  updateSections: (items : leftColumnSection[]) => void,
   contacts : contact[],
   updateContacts : (items : contact[]) => void,
   onAddContact : () => void,
@@ -15,12 +17,23 @@ type props = {
 }
 
 const LeftColBuilder : FC<props> = (props) => {
+  const [sectionsOpen, setSectionsOpen] = useState(false);
   const [contactsOpen, setContactsOpen] = useState(false);
   const [skillsOpen, setSkillsOpen] = useState(false);
   const [referencessOpen, setReferencesOpen] = useState(false);
 
+  const setSectionBuilderOpenWrap = (b : boolean) => {
+    if (b) {
+      setContactsOpen(false);
+      setSkillsOpen(false);
+      setReferencesOpen(false);
+    }
+    setSectionsOpen(b);
+  }
+  
   const setContactsOpenWrap = (b : boolean) => {
     if (b) {
+      setSectionsOpen(false);
       setSkillsOpen(false);
       setReferencesOpen(false);
     }
@@ -29,6 +42,7 @@ const LeftColBuilder : FC<props> = (props) => {
 
   const setSkillsOpenWrap = (b : boolean) => {
     if (b) {
+      setSectionsOpen(false);
       setContactsOpen(false);
       setReferencesOpen(false);
     }
@@ -37,6 +51,7 @@ const LeftColBuilder : FC<props> = (props) => {
 
   const setReferencesOpenWrap = (b : boolean) => {
     if (b) {
+      setSectionsOpen(false);
       setContactsOpen(false);
       setSkillsOpen(false);
     }
@@ -48,6 +63,13 @@ const LeftColBuilder : FC<props> = (props) => {
       className={"fixed top-32 flex flex-col gap-y-6 w-72 transition-all "
       + `duration-500 ${props.show ? '-left-5' : '-left-72'}`}
     >
+      <LeftSectionBuilder
+        open={sectionsOpen}
+        setOpen={setSectionBuilderOpenWrap}
+        allItems={props.sections}
+        updateItems={props.updateSections}
+        heading="Sections"
+      />
       <LeftSectionBuilder
         open={contactsOpen}
         setOpen={setContactsOpenWrap}

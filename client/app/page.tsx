@@ -7,7 +7,7 @@ import RightColBuilder from "@/components/RightColBuilder";
 import LeftColBuilder from "@/components/LeftColBuilder";
 import SkillsPopup from "@/components/SkillsPopup";
 import ReferencePopup from "@/components/ReferencePopup";
-import EducationPopup from "@/components/EducationPopup";
+import TextPopup from "@/components/TextPopup";
 import SavePopup from "@/components/SavePopup";
 import LoadPopup from "@/components/LoadPopup";
 import HeaderPopup from "@/components/HeaderPopup";
@@ -23,6 +23,8 @@ const Page : FC = () => {
   const [focusedRightItem, setFocusedRightItem] = useState(-1);
   const [focusedIsNew, setFocusedIsNew] = useState(false);
   // state for the left column
+  const [leftSections, setLeftSections] = useState<leftColumnSection[]>([]);
+  const [summary, setSummary] = useState("");
   const [contacts, setContacts] = useState<contact[]>([]);
   const [educationText, setEducationText] = useState("");
   const [skills, setSkills] = useState<skillList[]>([]);
@@ -49,6 +51,7 @@ const Page : FC = () => {
           return item;
         }
       ));
+      setSummary(response.data.defaultSummary);
       setContacts(response.data.contacts.map(
         (item : contact) => {
           item.shown = false;
@@ -69,6 +72,13 @@ const Page : FC = () => {
         item.shown = false;
         return item;
       }));
+      setLeftSections([
+        { name: "Summary", shown: true },
+        { name: "Contact", shown: true },
+        { name: "Education", shown: true },
+        { name: "Skills", shown: true },
+        { name: "References", shown: true },
+      ])
       setLoading(false);
     }).catch(err => {
       console.error(err);
@@ -144,60 +154,92 @@ const Page : FC = () => {
 
   const generateNameTaglineEdit = () => {
     const onSubmit = (name : string, tagline : string) => {
-    setName(name);
-    setTagline(tagline);
-    showPopup("header");
+      setName(name);
+      setTagline(tagline);
+      showPopup("header");
+    }
+
+    const onOverwrite = (newName : string, newTagline : string) => {
+      const url = 'http://localhost:3300/';
+      let nameSet = newName == name;
+      let taglineSet = newTagline == tagline;
+      if (!nameSet) {
+        axios.put(`${url}defaultName`, { newName : newName }).then(() => {
+          setName(newName);
+          alert("Updated default name");
+        }).catch((err) => {
+          alert("There was an error. Default name was not updated");
+          console.error(err);
+        }).finally(() => {
+          nameSet = true;
+          console.log(nameSet, taglineSet);
+          if (!(nameSet && taglineSet)) {
+            showPopup("");
+          }
+        });
+      }
+      if (!taglineSet) {
+        const body = { newTagline : newTagline }
+        axios.put(`${url}defaultTagline`, body).then(() => {
+          setTagline(newTagline);
+          alert("Updated default tagline");
+        }).catch((err) => {
+          alert("There was an error. Default tagline was not updated");
+          console.error(err);
+        }).finally(() => {
+          taglineSet = true;
+          console.log(nameSet, taglineSet);
+          if (!(nameSet && taglineSet)) {
+            showPopup("");
+          }
+        });
+      }
+    }
+
+    return (
+      <div className="fixed top-0 p-16 w-screen h-screen flex items-center
+      justify-center bg-white bg-opacity-70">
+        <HeaderPopup
+          oldName={name}
+          oldTagline={tagline}
+          onClose={() => showPopup("")}
+          onSubmit={onSubmit}
+          onOverwrite={onOverwrite}
+        />
+      </div>
+    )
   }
 
-  const onOverwrite = (newName : string, newTagline : string) => {
-    const url = 'http://localhost:3300/';
-    let nameSet = newName == name;
-    let taglineSet = newTagline == tagline;
-    if (!nameSet) {
-      axios.put(`${url}defaultName`, { newName : newName }).then(() => {
-        setName(newName);
-        alert("Updated default name");
-      }).catch((err) => {
-        alert("There was an error. Default name was not updated");
-        console.error(err);
-      }).finally(() => {
-        nameSet = true;
-        console.log(nameSet, taglineSet);
-        if (!(nameSet && taglineSet)) {
-          showPopup("");
-        }
-      });
+  const generateSummaryEditor = () => {
+    const onSubmit = (text : string) => {
+      setSummary(text);
+      showPopup("");
     }
-    if (!taglineSet) {
-      const body = { newTagline : newTagline }
-      axios.put(`${url}defaultTagline`, body).then(() => {
-        setTagline(newTagline);
-        alert("Updated default tagline");
-      }).catch((err) => {
-        alert("There was an error. Default tagline was not updated");
-        console.error(err);
-      }).finally(() => {
-        taglineSet = true;
-        console.log(nameSet, taglineSet);
-        if (!(nameSet && taglineSet)) {
-          showPopup("");
-        }
-      });
-    }
-  }
 
-  return (
-    <div className="fixed top-0 p-16 w-screen h-screen flex items-center
-    justify-center bg-white bg-opacity-70">
-      <HeaderPopup
-        oldName={name}
-        oldTagline={tagline}
-        onClose={() => showPopup("")}
-        onSubmit={onSubmit}
-        onOverwrite={onOverwrite}
-      />
-    </div>
-  )
+    const onOverwrite = (text : string) => {
+      const body = { newSummary : text };
+      const url = 'http://localhost:3300/defaultSummary';
+      axios.put(url, body).then(() => {
+        onSubmit(text);
+        alert("Updated default summary");
+      }).catch((err) => {
+        alert("There was an error. Default summary was not updated");
+        console.error(err);
+      })
+    }
+
+    return (
+      <div className="fixed top-0 p-16 w-screen h-screen flex items-center
+      justify-center bg-white bg-opacity-70">
+        <TextPopup
+          name="Summary"
+          oldText={summary}
+          onClose={() => showPopup("")}
+          onSubmit={onSubmit}
+          onOverwrite={onOverwrite}
+        />
+      </div>
+    )
   }
 
   const generateNewContactInput = () => {
@@ -249,7 +291,8 @@ const Page : FC = () => {
     return (
       <div className="fixed top-0 p-16 w-screen h-screen flex items-center
       justify-center bg-white bg-opacity-70">
-        <EducationPopup
+        <TextPopup
+          name="Education"
           oldText={educationText}
           onClose={() => showPopup("")}
           onSubmit={onSubmit}
@@ -363,6 +406,8 @@ const Page : FC = () => {
   const generateLeftColumnBuilder = () => {
     return <LeftColBuilder
       show={widgets}
+      sections={leftSections}
+      updateSections={setLeftSections}
       contacts={contacts}
       updateContacts={setContacts}
       onAddContact={ () => showPopup("contact") }
@@ -446,6 +491,7 @@ const Page : FC = () => {
         headerName: name,
         tagline: tagline,
         rightColumn: savedRightCol,
+        summary: summary,
         contacts: savedContacts,
         education: educationText,
         skillLists: savedSkills,
@@ -562,6 +608,7 @@ const Page : FC = () => {
       setName(selected.headerName);
       setTagline(selected.tagline);
       setRightColumn(selected.rightColumn);
+      setSummary(selected.summary);
       setContacts(selected.contacts);
       setEducationText(selected.education);
       setSkills(selected.skillLists);
@@ -681,6 +728,8 @@ const Page : FC = () => {
       return generateFocusedExperience(focusedRightItem);
     } else if (currentPopup == "header") {
       return generateNameTaglineEdit();
+    } else if (currentPopup == "summary") {
+      return generateSummaryEditor();
     } else if (currentPopup == "contact") {
       return generateNewContactInput();
     } else if (currentPopup == "education") {
@@ -718,6 +767,8 @@ const Page : FC = () => {
       name={name}
       tagline={tagline}
       rightColumn={rightColumn}
+      leftColumnSections={leftSections}
+      summary={summary}
       contacts={contacts}
       education={educationText}
       skills={skills}

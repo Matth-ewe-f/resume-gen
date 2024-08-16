@@ -175,6 +175,8 @@ putField(app, 'defaultTagline', 'newTagline');
 
 putField(app, 'defaultEducation', 'newEducation');
 
+putField(app, 'defaultSummary', 'newSummary');
+
 app.get('/resumes', (req: Request, res: Response) => {
   lock.readLock((release) => {
     readFromFile().then((data : any) => {

@@ -4,6 +4,7 @@ type resume = {
   headerName: string,
   tagline: string,
   rightColumn: rightColumnItem[],
+  summary: string,
   contacts: contact[],
   education: string,
   skillLists: skillList[],
@@ -33,6 +34,11 @@ type heading = {
 }
 
 type rightColumnItem = (experience | heading) & { isHeading?: boolean };
+
+type leftColumnSection = {
+  name: string,
+  shown?: boolean,
+}
 
 type leftColumnItem = {
   name: string,

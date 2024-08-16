@@ -3,20 +3,21 @@ import { FC, useState } from "react";
 import SmartTextArea from "./SmartTextArea";
 
 type props = {
+  name: string,
   oldText: string,
   onClose: () => void,
   onSubmit: (newText : string) => void,
   onOverwrite: (newText : string) => void, 
 };
 
-const EducationPopup : FC<props> = (props) => {
+const TextPopup : FC<props> = (props) => {
   const [text, setText] = useState(props.oldText);
 
   return (
     <div className="w-[480px] px-6 py-4 bg-stone-300 rounded-2xl shadow-lg">
       <div className="flex flex-row items-center justify-between">
         <h3 className="text-xl font-grotesk uppercase tracking-ultra">
-          Edit Education
+          Edit {props.name}
         </h3>
         <button onClick={ props.onClose }>
           <X size={32} className="hover:text-stone-400"/>
@@ -48,4 +49,4 @@ const EducationPopup : FC<props> = (props) => {
   );
 }
 
-export default EducationPopup;
+export default TextPopup;

@@ -8,6 +8,8 @@ type props = {
   name: string,
   tagline: string,
   rightColumn: rightColumnItem[],
+  leftColumnSections: leftColumnSection[],
+  summary: string,
   contacts: contact[],
   education: string,
   skills: skillList[],
@@ -46,6 +48,57 @@ const Resume : FC<props> = (props) => {
       return <Square className={className} size={16} strokeWidth={1}/>;
     }
   }
+  
+  const processMdSubset = (text : string) => {
+    const processLink = (text : string) => {
+      let jsx : (JSX.Element | string)[] = [];
+      const linkRegex = /\[.+?\]\(.+?\)/;
+      let match = text.match(linkRegex);
+      while (match) {
+        const link = match[0];
+        jsx.push(text.substring(0, match.index));
+        jsx.push(
+          <a href={link.split(/[\(\)]/)[1]} className="underline">
+            {link.substring(1, link.indexOf("]"))}
+          </a>
+        );
+        text = text.substring((match.index || 0) + link.length);
+        match = text.match(linkRegex);
+      }
+      jsx.push(text);
+      return jsx;
+    }
+
+    return text.split("\n").map((piece) => {
+      return <p className="min-h-2">
+        {
+          piece.split("**").map((piece, index) => {
+            if (index % 2 == 0) {
+              return processLink(piece);
+            } else {
+              return <span className="font-bold">{processLink(piece)}</span>
+            }
+          })
+        }
+      </p>
+    })
+  }
+  
+  const generateSummarySection = () => {
+    return (
+      <button onClick={() => showPopup("summary")} className="text-left">
+        <h5 className="mb-2 text font-grotesk font-medium uppercase
+        tracking-ultra">
+          Summary
+        </h5>
+        { props.summary != "" &&
+          <div className="text-left text-mini leading-tight pr-4">
+            { processMdSubset(props.summary) }
+          </div>
+        }
+      </button>
+    );
+  }
 
   const generateContactSection = () => {
     const getTextForContact = (contact : contact) => {
@@ -66,7 +119,7 @@ const Resume : FC<props> = (props) => {
     }
 
     return <>
-      <h5 className="pt-4 mb-2 text font-grotesk font-medium uppercase
+      <h5 className="mb-2 text font-grotesk font-medium uppercase
       tracking-ultra">
         Contact
       </h5>
@@ -86,24 +139,15 @@ const Resume : FC<props> = (props) => {
 
   const generateEducationSection = () => {
     return (
-      <button onClick={() => showPopup("education")} className="text-left">
+      <button onClick={() => showPopup("education")}
+      className="text-left">
         <h5 className="mb-2 text font-grotesk font-medium uppercase
         tracking-ultra">
           Education
         </h5>
         { props.education != "" &&
           <div className="text-left text-mini leading-tight">
-            { props.education.split("\n").map(line => {
-              return <p className="min-h-2">
-                {line.split("**").map((piece, index) => {
-                  if (index % 2 == 0) {
-                    return piece;
-                  } else {
-                    return <span className="font-bold">{piece}</span>
-                  }
-                })}
-              </p>
-            }) }
+            { processMdSubset(props.education) }
           </div>
         }
       </button>
@@ -122,7 +166,7 @@ const Resume : FC<props> = (props) => {
     }
 
     return <>
-      <h5 className="my-2 text font-grotesk font-medium uppercase
+      <h5 className="mb-2 text font-grotesk font-medium uppercase
       tracking-ultra">
         Skills
       </h5>
@@ -169,8 +213,8 @@ const Resume : FC<props> = (props) => {
       }
     }
 
-    return <>
-      <h5 className="pl-4 pt-2 text font-grotesk font-medium uppercase
+    return <div className="-ml-4">
+      <h5 className="pl-4 text font-grotesk font-medium uppercase
       tracking-ultra">
         References
       </h5>
@@ -190,7 +234,27 @@ const Resume : FC<props> = (props) => {
           }
         })}
       </div>
-    </>
+    </div>
+  }
+
+  const generateLeftColumnSections = () => {
+    let result : JSX.Element[] = [];
+    props.leftColumnSections.forEach(section => {
+      if (section.shown) {
+        if (section.name == "Summary") {
+          result.push(generateSummarySection());
+        } else if (section.name == "Contact") {
+          result.push(generateContactSection());
+        } else if (section.name == "Education") {
+          result.push(generateEducationSection());
+        } else if (section.name == "Skills") {
+          result.push(generateSkillsSection());
+        } else if (section.name == "References") {
+          result.push(generateReferencesSection());
+        }
+      }
+    })
+    return result;
   }
 
   const generateHeadingJSX = 
@@ -221,35 +285,6 @@ const Resume : FC<props> = (props) => {
     const onClick = () => {
       props.setFocusedRightItem(index);
       showPopup("experience");
-    }
-
-    const processMdSubset = (text : string) => {
-      const processLink = (text : string) => {
-        let jsx : (JSX.Element | string)[] = [];
-        const linkRegex = /\[.+?\]\(.+?\)/;
-        let match = text.match(linkRegex);
-        while (match) {
-          const link = match[0];
-          jsx.push(text.substring(0, match.index));
-          jsx.push(
-            <a href={link.split(/[\(\)]/)[1]} className="underline">
-              {link.substring(1, link.indexOf("]"))}
-            </a>
-          );
-          text = text.substring((match.index || 0) + link.length);
-          match = text.match(linkRegex);
-        }
-        jsx.push(text);
-        return jsx;
-      }
-
-      return text.split("**").map((piece, index) => {
-        if (index % 2 == 0) {
-          return processLink(piece);
-        } else {
-          return <span className="font-bold">{processLink(piece)}</span>
-        }
-      })
     }
 
     return (
@@ -309,19 +344,17 @@ const Resume : FC<props> = (props) => {
         <div className="bg-stone-700 h-[1px] w-auto mx-24"/>
         <div className="flex flex-row w-full">
           <div className="w-[19rem] flex-shrink-0 flex flex-col">
-            <div className="pl-[4.5rem] bg-stone-100 pb-1">
-              { generateContactSection() }
-              <hr className="mt-4 mb-3 mr-8 border-dashed border-t border-stone-600"/>
-              { generateEducationSection() }
-              <hr className="mt-4 mb-3 mr-8 border-dashed border-t border-stone-600"/>
-              { generateSkillsSection() }
+            <div className="pl-[4.5rem] bg-stone-100 pt-4 pb-1">
+              { generateLeftColumnSections().map((section, index, arr) => {
+                return <>
+                  { section }
+                  { index != arr.length - 1 &&
+                    <hr className="mt-4 mb-3 mr-8 border-dashed border-t
+                    border-stone-600"/>
+                  }
+                </>;
+              })}
             </div>
-            { props.references.some(r => r.shown) &&
-                <div className="pl-[3.5rem] bg-stone-100">
-                  <hr className="mr-8 ml-4 border-dashed border-t border-stone-600"/>
-                  { generateReferencesSection() }
-                </div>
-            }
             <div className="flex-grow bg-stone-100 min-h-4"/>
           </div>
           <div className="flex-grow pl-6 pr-20 pt-2 pb-2">
