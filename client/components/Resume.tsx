@@ -302,10 +302,10 @@ const Resume : FC<props> = (props) => {
               { experience.dates }
             </span>
           </div>
-          <span className="relative -top-[5px] w-full text-mini">
+          <p className="relative -top-0.5 w-full text-mini">
             { processMdSubset(experience.subtitle) }
-          </span>
-          <ul className="-mt-1.5 ml-4 text-mini list-disc text-justify">
+          </p>
+          <ul className="-mt-0.25 ml-4 text-mini list-disc text-justify">
             {experience.bullets.map((bullet, j) => {
               if (bullet.shown) {
                 return (
