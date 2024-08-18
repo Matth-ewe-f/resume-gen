@@ -491,6 +491,7 @@ const Page : FC = () => {
         headerName: name,
         tagline: tagline,
         rightColumn: savedRightCol,
+        leftColumnSections: leftSections,
         summary: summary,
         contacts: savedContacts,
         education: educationText,
@@ -608,6 +609,7 @@ const Page : FC = () => {
       setName(selected.headerName);
       setTagline(selected.tagline);
       setRightColumn(selected.rightColumn);
+      setLeftSections(selected.leftColumnSections);
       setSummary(selected.summary);
       setContacts(selected.contacts);
       setEducationText(selected.education);

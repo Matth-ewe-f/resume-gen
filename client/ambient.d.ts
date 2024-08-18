@@ -4,6 +4,7 @@ type resume = {
   headerName: string,
   tagline: string,
   rightColumn: rightColumnItem[],
+  leftColumnSections: leftColumnSection[],
   summary: string,
   contacts: contact[],
   education: string,
