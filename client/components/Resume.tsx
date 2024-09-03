@@ -26,6 +26,7 @@ const Resume : FC<props> = (props) => {
 
   const getIconForContact = (type : string) => {
     const className = "text-stone-600 shrink-0";
+    type = type.toLowerCase();
     if (type == "phone") {
       return <Phone className={className} size={16} strokeWidth={1}/>;
     } else if (type == "email") {
