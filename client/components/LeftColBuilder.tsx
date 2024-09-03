@@ -61,7 +61,7 @@ const LeftColBuilder : FC<props> = (props) => {
   return (
     <div 
       className={"fixed top-32 flex flex-col gap-y-6 w-72 transition-all "
-      + `duration-500 ${props.show ? '-left-5' : '-left-72'}`}
+      + `duration-500 ${props.show ? '-left-5' : '-left-80'}`}
     >
       <LeftSectionBuilder
         open={sectionsOpen}
