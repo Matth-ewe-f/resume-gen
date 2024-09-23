@@ -6,6 +6,9 @@ Resumemory allows you to easily create and maintain dozens of resumes tailored t
 
 Resumemory was created by Matthew Flynn to assist in his post-graduation job search. At its inception it was meant to be a simple personal project, and so this public-facing version is still a work in progress. See [Limitations](#current-limitations) for more details.
 
+## See it Work
+<video src="https://game-portfolio-clips.s3.amazonaws.com/resumemory.mp4" width=500 controls></video>
+
 ## Built With
 * [Next.js](https://nextjs.org/)
 * [React](https://react.dev/)
